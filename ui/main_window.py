@@ -263,8 +263,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.doc.clear_container(key)
 
     # ------------------------------------------------------------------ import
-    def import_anything(self, show_blank=False):
-        dlg = ImportScreen(self, show_blank=show_blank)
+    def import_anything(self):
+        dlg = ImportScreen(self)
         if dlg.exec() != QtWidgets.QDialog.Accepted:
             return
         self.import_choice(dlg.choice())

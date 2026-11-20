@@ -42,6 +42,4 @@ def main(argv=None):
         w.open_project(path)
     elif path and path.lower().endswith('.bin'):
         QtCore.QTimer.singleShot(0, lambda: w.import_bin(path))
-    elif '--no-import' not in argv:
-        QtCore.QTimer.singleShot(0, lambda: w.import_anything(show_blank=True))
     return app.exec()

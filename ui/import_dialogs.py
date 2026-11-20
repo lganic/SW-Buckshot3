@@ -55,7 +55,7 @@ class PlacementPicker(QtWidgets.QWidget):
 class ImportScreen(QtWidgets.QDialog):
     """Pick what to bring in. Returns choice() in {'mesh', 'bin', 'image', 'blank'}."""
 
-    def __init__(self, parent=None, show_blank=False):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle('Buckshot 3 - Import')
         self._choice = None
@@ -72,8 +72,6 @@ class ImportScreen(QtWidgets.QDialog):
             ('image', 'Reference image',
              'Use any picture as the reference for the centre tile or a neighbour slot.'),
         ]
-        if show_blank:
-            options.append(('blank', 'Start from scratch', 'An empty tile. You can import references later (Ctrl+I).'))
         for key, head, desc in options:
             b = QtWidgets.QPushButton()
             b.setMinimumHeight(66)
