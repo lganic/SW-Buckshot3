@@ -39,7 +39,7 @@ def main(argv=None):
 
     path = next((a for a in argv[1:] if not a.startswith('-')), None)
     if path and path.lower().endswith('.bs3'):
-        w.open_project(path)
+        QtCore.QTimer.singleShot(0, lambda: w.open_project(path))
     elif path and path.lower().endswith('.bin'):
         QtCore.QTimer.singleShot(0, lambda: w.import_bin(path))
     return app.exec()

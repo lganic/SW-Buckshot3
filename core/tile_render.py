@@ -10,39 +10,62 @@ def tile_transform(size: int) -> QtGui.QTransform:
     return QtGui.QTransform(s, 0, 0, -s, TILE_HALF * s, TILE_HALF * s)
 
 
-def render_tiledata(td, size: int, draw_lines=True) -> QtGui.QImage:
+# Triangles per drawPath call. One antialiased winding-fill path per layer gets
+# very slow as it grows; ~50-triangle paths draw about twice as fast, look the
+# same (the hairline outline covers the seams between batches, at most a few
+# levels of shading on edge pixels), and give regular points to report progress.
+RENDER_BATCH = 50
+LINE_COST = 0.05      # progress weight of one line segment, relative to a triangle
+
+
+def render_tiledata(td, size: int, draw_lines=True, progress=None) -> QtGui.QImage:
+    """progress(fraction) is called between batches; it may raise to abort the render."""
+    total = sum(len(t) for _, t in td.layers.values() if t) or 1
+    if draw_lines:
+        total += LINE_COST * sum(len(s) for s in td.segments)
+    done = 0.0
     img = QtGui.QImage(size, size, QtGui.QImage.Format_RGB32)
     img.fill(QtGui.QColor(*BASE_COLOR))
     p = QtGui.QPainter(img)
-    p.setRenderHint(QtGui.QPainter.Antialiasing, True)
-    p.setTransform(tile_transform(size))
-    for name in RENDER_ORDER:
-        verts, tris = td.layers.get(name, ([], []))
-        if not tris:
-            continue
-        color = QtGui.QColor(*LAYER_COLORS[name])
-        p.setPen(QtGui.QPen(color, 0))
-        p.setBrush(color)
-        path = QtGui.QPainterPath()
-        path.setFillRule(QtCore.Qt.WindingFill)
-        for i, j, k in tris:
-            try:
-                a, b, c = verts[i], verts[j], verts[k]
-            except IndexError:
+    try:
+        p.setRenderHint(QtGui.QPainter.Antialiasing, True)
+        p.setTransform(tile_transform(size))
+        for name in RENDER_ORDER:
+            verts, tris = td.layers.get(name, ([], []))
+            if not tris:
                 continue
-            if (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]) < 0:
-                b, c = c, b          # same winding for all, so overlaps never cancel
-            path.addPolygon(QtGui.QPolygonF([QtCore.QPointF(*a), QtCore.QPointF(*b),
-                                             QtCore.QPointF(*c), QtCore.QPointF(*a)]))
-        p.drawPath(path)
-    if draw_lines:
-        pen = QtGui.QPen(QtGui.QColor(70, 70, 70), max(1.0, size / 1000))
-        pen.setCosmetic(True)
-        p.setPen(pen)
-        for segs in td.segments:
-            for a, b in segs:
-                p.drawLine(QtCore.QPointF(*a), QtCore.QPointF(*b))
-    p.end()
+            color = QtGui.QColor(*LAYER_COLORS[name])
+            p.setPen(QtGui.QPen(color, 0))
+            p.setBrush(color)
+            for start in range(0, len(tris), RENDER_BATCH):
+                batch = tris[start:start + RENDER_BATCH]
+                path = QtGui.QPainterPath()
+                path.setFillRule(QtCore.Qt.WindingFill)
+                for i, j, k in batch:
+                    try:
+                        a, b, c = verts[i], verts[j], verts[k]
+                    except IndexError:
+                        continue
+                    if (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]) < 0:
+                        b, c = c, b          # same winding for all, so overlaps never cancel
+                    path.addPolygon(QtGui.QPolygonF([QtCore.QPointF(*a), QtCore.QPointF(*b),
+                                                     QtCore.QPointF(*c), QtCore.QPointF(*a)]))
+                p.drawPath(path)
+                done += len(batch)
+                if progress:
+                    progress(done / total)
+        if draw_lines:
+            pen = QtGui.QPen(QtGui.QColor(70, 70, 70), max(1.0, size / 1000))
+            pen.setCosmetic(True)
+            p.setPen(pen)
+            for segs in td.segments:
+                for a, b in segs:
+                    p.drawLine(QtCore.QPointF(*a), QtCore.QPointF(*b))
+                done += LINE_COST * len(segs)
+                if progress:
+                    progress(done / total)
+    finally:
+        p.end()
     return img
 
 

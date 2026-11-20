@@ -12,6 +12,7 @@ from .import_dialogs import ImportScreen, BinImportDialog, ImageImportDialog
 from .mesh_dialog import MeshRenderDialog
 from .panels import LayersPanel, ReferencePanel
 from .paths import PathCache
+from .progress import ProgressPopup, Cancelled, subrange
 from .state import EditorState, ImageRef, Neighbour
 
 TOOL_INFO = {
@@ -358,7 +359,15 @@ class MainWindow(QtWidgets.QMainWindow):
             self.doc.reset(td.layers, td.channels if dlg.lines.isChecked() else None)
             self.statusBar().showMessage(f'Loaded {os.path.basename(path)}: {td.tri_count()} triangles', 5000)
         else:
-            self._place_bin_neighbour(slot, path, dlg.res.value(), td)
+            res = dlg.res.value()
+            try:
+                with ProgressPopup(self, 'Rendering tile',
+                                   f'Rendering {os.path.basename(path)} at {res} px…') as progress:
+                    img = render_tiledata(td, res, progress=progress)
+            except Cancelled:
+                self.statusBar().showMessage('Render cancelled', 4000)
+                return
+            self._place_bin_neighbour(slot, path, res, td, img)
         self._update_title()
 
     def _import_bin_lines(self, path, td, clear_first):
@@ -379,13 +388,7 @@ class MainWindow(QtWidgets.QMainWindow):
         verb = 'Replaced lines with' if clear_first else 'Added'
         self.statusBar().showMessage(f'{verb} {added} line segments from {name} - Ctrl+Z to undo', 6000)
 
-    def _place_bin_neighbour(self, slot, path, res, td=None):
-        td = td or bin_io.load_bin(path)
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        try:
-            img = render_tiledata(td, res)
-        finally:
-            QtWidgets.QApplication.restoreOverrideCursor()
+    def _place_bin_neighbour(self, slot, path, res, td, img):
         nb = Neighbour(slot, 'bin', ImageRef(img, os.path.basename(path), path), path, res, td)
         nb.compute_edge_points()
         self.state.neighbours[slot] = nb
@@ -456,11 +459,54 @@ class MainWindow(QtWidgets.QMainWindow):
         path = path or self._ask_file('Open project', 'Buckshot 3 project (*.bs3);;All files (*)')
         if not path:
             return
+        name = os.path.basename(path)
         try:
-            layers, channels, names, refs, data = project_io.load_project(path)
+            with ProgressPopup(self, 'Opening project', f'Reading {name}…') as progress:
+                project, loaded, problems = self._read_project(path, subrange(progress, 0, 0.9))
+                # nothing has changed yet; from here on the editor is being replaced
+                progress.set_cancellable(False)
+                progress(0.9, 'Building tile geometry…')
+                problems += self._apply_project(path, project, loaded)
+        except Cancelled:
+            self.statusBar().showMessage(f'Cancelled opening {name}', 4000)
+            return
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, 'Open failed', str(e))
             return
+        if problems:
+            QtWidgets.QMessageBox.warning(self, 'Some references were not loaded', '\n'.join(problems))
+
+    def _read_project(self, path, progress):
+        """Read the project and load / render its references, without touching the editor."""
+        layers, channels, names, refs, data = project_io.load_project(path)
+        weights = [10 if r.get('kind') == 'bin' else 1 for r in refs]    # .bin renders dominate
+        total = 1 + sum(weights)
+        done = 1
+        loaded, problems = [], []
+        for r, w in zip(refs, weights):
+            step = subrange(progress, done / total, (done + w) / total)
+            label = r.get('label') or os.path.basename(r.get('path') or r.get('image') or '')
+            try:
+                if r['kind'] == 'bin':
+                    step(0, f'Reading {label}…')
+                    td = bin_io.load_bin(r['path'])
+                    res = r.get('resolution', 2048)
+                    step(0.05, f'Rendering {label} at {res} px…')
+                    loaded.append((r, td, render_tiledata(td, res, progress=subrange(step, 0.05, 1))))
+                else:
+                    step(0, f'Loading {label}…')
+                    loaded.append((r, None, project_io.load_image(r['image'])))
+            except Cancelled:
+                raise
+            except Exception as e:
+                problems.append(f'{r.get("slot")}: {e}')
+            done += w
+        progress(1)
+        return (layers, channels, names, data), loaded, problems
+
+    def _apply_project(self, path, project, loaded):
+        """Replace the editor's tile and references with a read project; returns problems."""
+        layers, channels, names, data = project
         self.canvas.reset_interaction()
         self.doc.reset(layers, channels, names)
         st = self.state
@@ -471,13 +517,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if view.get('snap') in SNAP_AMOUNTS:
             self.snap_combo.setCurrentIndex(SNAP_AMOUNTS.index(view['snap']))
         problems = []
-        for r in refs:
+        for r, td, img in loaded:
             try:
                 if r['kind'] == 'bin':
-                    self._place_bin_neighbour(r['slot'], r['path'], r.get('resolution', 2048))
+                    self._place_bin_neighbour(r['slot'], r['path'], r.get('resolution', 2048), td, img)
                 else:
-                    ref = ImageRef(project_io.load_image(r['image']), r.get('label', ''),
-                                   None if r['kind'] == 'mesh' else r['image'])
+                    ref = ImageRef(img, r.get('label', ''), None if r['kind'] == 'mesh' else r['image'])
                     if r['slot'] == 'C':
                         st.background = ref
                     else:
@@ -490,8 +535,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.project_path = path
         st.last_dir = os.path.dirname(path)
         self._update_title()
-        if problems:
-            QtWidgets.QMessageBox.warning(self, 'Some references were not loaded', '\n'.join(problems))
+        return problems
 
     def save_project(self):
         if not self.project_path:
