@@ -1,0 +1,3 @@
+PySide6
+numpy
+sw_ducky @ https://github.com/lganic/SW-Ducky/archive/refs/heads/main.zip

@@ -1,23 +1,80 @@
 # Buckshot 3
 
-One app for modding Stormworks map tiles. It replaces the old chain:
-`r2.py` / `r3.py` → `ref.png` + `export.json` → `run.py` → `line_editor.py` → lines JSON → `add_lines.py`.
-No intermediate files: renders, generated lines, geometry and hand-drawn lines all live in one document,
-and **Export .bin** goes straight to sw_ducky.
+A desktop editor for modding Stormworks map tiles. Render the game's `.mesh` files into a top-down
+reference image, generate shoreline and height contour lines from them, edit the tile's geometry and
+map lines by hand, and export a ready-to-use map `.bin`, all in one window with no intermediate files.
+Map files are read and written with [sw_ducky](https://github.com/lganic/SW-Ducky).
 
-```powershell
-py -m Buckshot3
+## Requirements
+
+* **Python 3.10 or newer.** Get it from [python.org](https://www.python.org/downloads/).
+  On Windows, tick **"Add python.exe to PATH"** in the installer.
+* Three Python libraries: **PySide6** (the GUI), **numpy** and **sw_ducky**. They're listed in
+  `requirements.txt` and installed in step 2 below.
+
+The commands below are for Windows, where Python installs the `py` launcher.
+On macOS or Linux, use `python3` wherever you see `py`.
+
+## Install
+
+### 1. Download Buckshot 3
+
+Either clone it with git:
+
+```
+git clone https://github.com/lganic/SW-Buckshot3.git
+cd SW-Buckshot3
 ```
 
-Run it from the repo root. It needs PySide6, numpy and sw_ducky (your Python 3.14 install has all three).
-You can also pass a file to open: `py -m Buckshot3 my_tile.bs3` or `py -m Buckshot3 tile.bin`.
+or, without git, go to the [GitHub page](https://github.com/lganic/SW-Buckshot3), click **Code → Download ZIP**,
+extract it, and open a terminal in the extracted folder (the one containing `README.md`).
+
+### 2. Install the libraries
+
+From inside the Buckshot 3 folder:
+
+```
+py -m pip install -r requirements.txt
+```
+
+This pulls PySide6 and numpy from PyPI, and sw_ducky straight from its GitHub repository
+(it isn't on PyPI, and git isn't needed for it). If you'd rather keep these out of your main Python install,
+create and activate a [virtual environment](https://docs.python.org/3/library/venv.html) first.
+
+## Run
+
+From inside the Buckshot 3 folder:
+
+```
+py .
+```
+
+You can also open a file directly:
+
+```
+py . my_tile.bs3
+py . some_tile.bin
+```
+
+From somewhere else, pass the folder's path instead of `.`, e.g. `py path/to/SW-Buckshot3`.
+The folder can have any name, so a ZIP extracted as `SW-Buckshot3-main` works the same way.
+
+Starting with no file opens the Import dialog. Add `--no-import` to start on an empty tile instead.
+
+### Troubleshooting
+
+* **`py` is not recognised**: Python isn't installed, or it wasn't added to PATH. Re-run the installer
+  and tick the PATH option, or try `python` instead of `py`.
+* **`ModuleNotFoundError: No module named 'PySide6'`** (or `numpy`): step 2 didn't run with the same Python
+  you're launching with. Run `py -m pip install -r requirements.txt` again, using the exact command you run the app with.
+* **"sw_ducky could not be imported" when importing or exporting a .bin**: same fix as above.
 
 ## Workflow
 
 1. **Import** (Ctrl+I, shown at startup)
    * **Render .mesh files**: add one or more meshes. Each has X / Height / Z offsets, a yaw rotation, and a
-     *Contours* tick box. The hangar and runway placements from `grunk2.py` are under *Apply placement preset*,
-     so the old `r3.py` setup is three rows. You also pick the render resolution and background colour, and
+     *Contours* tick box. Known hangar and runway placements for the stock islands are under
+     *Apply placement preset*. You also pick the render resolution and background colour, and
      which lines to generate:
      * Shoreline (sea level, channel)
      * Height contours (interval, levels, first channel, one channel per level or all in one)
@@ -28,7 +85,9 @@ You can also pass a file to open: `py -m Buckshot3 my_tile.bs3` or `py -m Bucksh
      Press **Render** to watch the tile draw (speed slider, or *Skip animation*). Then pick where it goes:
      the centre (it becomes the reference image, and its lines are added; Ctrl+Z undoes that) or a neighbour slot.
    * **Map tile (.bin)**: set the render resolution and a slot. The centre loads the tile (and its lines) for
-     editing. Any other slot (N / S / E / W / diagonals) shows it read-only beside your tile.
+     editing. Choose *Lines only* to keep your current map geometry and just add the .bin's lines
+     (tick *Clear existing lines first* to replace them instead; Ctrl+Z undoes either). Any other slot
+     (N / S / E / W / diagonals) shows it read-only beside your tile.
    * **Reference image**: any picture, stretched over a tile slot.
 
 2. **Edit**: one canvas with two modes (toolbar or `Tab`).
