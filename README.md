@@ -59,8 +59,6 @@ py . some_tile.bin
 From somewhere else, pass the folder's path instead of `.`, e.g. `py path/to/SW-Buckshot3`.
 The folder can have any name, so a ZIP extracted as `SW-Buckshot3-main` works the same way.
 
-Starting with no file opens the Import dialog. Add `--no-import` to start on an empty tile instead.
-
 ### Troubleshooting
 
 * **`py` is not recognised**: Python isn't installed, or it wasn't added to PATH. Re-run the installer
