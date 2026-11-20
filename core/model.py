@@ -276,6 +276,22 @@ class Document(QtCore.QObject):
         for a, b in zip(ids[:-1], ids[1:]):
             self.add_poly(key, (a, b))
 
+    def add_graph(self, key, verts, polys):
+        """Add (verts, index polys) to a container as one recorded edit; returns polygons added."""
+        ids = [self.add_vert(key, p) for p in verts]
+        used = set()
+        added = 0
+        for poly in polys:
+            if min(poly) < 0 or max(poly) >= len(ids):
+                continue
+            if self.add_poly(key, tuple(ids[i] for i in poly)) is not None:
+                used.update(poly)
+                added += 1
+        for i, vid in enumerate(ids):
+            if i not in used:
+                self.set_vert(key, vid, None)
+        return added
+
     def clear_container(self, key):
         g = self.graph(key)
         self.delete(key, list(g.verts), list(g.polys))

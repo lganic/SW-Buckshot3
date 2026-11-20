@@ -67,8 +67,8 @@ class ImportScreen(QtWidgets.QDialog):
              'Render one or more Stormworks meshes (with offsets / rotation) into a reference '
              'image, and generate shoreline, height and undersea lines from them.'),
             ('bin', 'Map tile (.bin)',
-             'Open a map geometry tile to edit, or place it above / below / beside your tile '
-             'so you can line things up across tiles.'),
+             'Open a map geometry tile to edit, import just its lines into your tile, or place it '
+             'above / below / beside your tile so you can line things up across tiles.'),
             ('image', 'Reference image',
              'Use any picture as the reference for the centre tile or a neighbour slot.'),
         ]
@@ -116,18 +116,36 @@ class BinImportDialog(QtWidgets.QDialog):
         self.res.setSuffix(' px')
         self.res.setToolTip('Resolution the tile is rendered at when shown as a neighbour')
         form.addRow('Render resolution', self.res)
-        self.lines = QtWidgets.QCheckBox('Import its lines as editable lines')
-        self.lines.setChecked(True)
-        form.addRow('', self.lines)
         lay.addLayout(form)
         lay.addWidget(QtWidgets.QLabel('Where should it go?'))
         self.picker = PlacementPicker(state, 'C')
         lay.addWidget(self.picker, 0, QtCore.Qt.AlignHCenter)
+
+        self.centre_box = QtWidgets.QGroupBox('Into your tile')
+        cb = QtWidgets.QVBoxLayout(self.centre_box)
+        self.mode_replace = QtWidgets.QRadioButton('Replace the tile (geometry and lines)')
+        self.mode_lines = QtWidgets.QRadioButton('Lines only (keep the current map geometry)')
+        self.mode_replace.setChecked(True)
+        self.mode_group = QtWidgets.QButtonGroup(self)
+        self.mode_group.addButton(self.mode_replace)
+        self.mode_group.addButton(self.mode_lines)
+        self.lines = QtWidgets.QCheckBox('Import its lines as editable lines')
+        self.lines.setChecked(True)
+        self.clear_lines = QtWidgets.QCheckBox('Clear existing lines first')
+        self.clear_lines.setToolTip('Remove every line in all channels before adding the imported ones')
+        cb.addWidget(self.mode_replace)
+        cb.addWidget(_indented(self.lines))
+        cb.addWidget(self.mode_lines)
+        cb.addWidget(_indented(self.clear_lines))
+        lay.addWidget(self.centre_box)
+
         self.note = QtWidgets.QLabel()
         self.note.setWordWrap(True)
         lay.addWidget(self.note)
         self.doc_empty = doc_empty
         self.picker.changed.connect(self._update)
+        self.mode_lines.toggled.connect(lambda _on: self._update(self.picker.slot()))
+        self.clear_lines.toggled.connect(lambda _on: self._update(self.picker.slot()))
         bb = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         bb.button(QtWidgets.QDialogButtonBox.Ok).setText('Import')
         bb.accepted.connect(self.accept)
@@ -137,15 +155,34 @@ class BinImportDialog(QtWidgets.QDialog):
 
     def _update(self, slot):
         centre = slot == 'C'
+        lines_only = self.mode_lines.isChecked()
         self.res.setEnabled(not centre)
-        self.lines.setEnabled(centre)
-        if centre:
+        self.centre_box.setEnabled(centre)
+        self.lines.setEnabled(not lines_only)
+        self.clear_lines.setEnabled(lines_only)
+        if centre and lines_only:
+            msg = 'Adds its lines to your tile. Your map geometry is left as it is.'
+            if self.clear_lines.isChecked():
+                msg += ' Existing lines are removed first.'
+            msg += ' (Ctrl+Z undoes this.)'
+        elif centre:
             msg = 'Loads the tile into the editor.'
             if not self.doc_empty:
                 msg += ' <b>This replaces the tile you are editing</b> (save first if needed).'
         else:
             msg = 'Shown as a read-only neighbour. Its border vertices become snap points (yellow diamonds).'
         self.note.setText(msg)
+
+    def lines_only(self):
+        return self.picker.slot() == 'C' and self.mode_lines.isChecked()
+
+
+def _indented(widget, px=22):
+    w = QtWidgets.QWidget()
+    h = QtWidgets.QHBoxLayout(w)
+    h.setContentsMargins(px, 0, 0, 0)
+    h.addWidget(widget)
+    return w
 
 
 class ImageImportDialog(QtWidgets.QDialog):

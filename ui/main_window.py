@@ -343,7 +343,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if dlg.exec() != QtWidgets.QDialog.Accepted:
             return
         slot = dlg.picker.slot()
-        if slot == 'C':
+        if dlg.lines_only():
+            self._import_bin_lines(path, td, dlg.clear_lines.isChecked())
+        elif slot == 'C':
             if not self._confirm_replace_tile():
                 return
             self.canvas.reset_interaction()
@@ -352,6 +354,24 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._place_bin_neighbour(slot, path, dlg.res.value(), td)
         self._update_title()
+
+    def _import_bin_lines(self, path, td, clear_first):
+        """Bring in only the .bin's line channels; the current map geometry is untouched."""
+        self.canvas.reset_interaction()
+        name = os.path.basename(path)
+        added = 0
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            with self.doc.edit(f'Import lines from {name}'):
+                if clear_first:
+                    for ch in range(len(self.doc.channels)):
+                        self.doc.clear_container(('line', ch))
+                for ch, (pts, edges) in enumerate(td.channels[:len(self.doc.channels)]):
+                    added += self.doc.add_graph(('line', ch), pts, edges)
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+        verb = 'Replaced lines with' if clear_first else 'Added'
+        self.statusBar().showMessage(f'{verb} {added} line segments from {name} - Ctrl+Z to undo', 6000)
 
     def _place_bin_neighbour(self, slot, path, res, td=None):
         td = td or bin_io.load_bin(path)
