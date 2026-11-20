@@ -5,6 +5,10 @@ reference image, generate shoreline and height contour lines from them, edit the
 map lines by hand, and export a ready-to-use map `.bin`, all in one window with no intermediate files.
 Map files are read and written with [sw_ducky](https://github.com/lganic/SW-Ducky).
 
+![Buckshot 3 editing a demo island, with geometry vertices and map lines on the canvas and an exploded layer stack on the right](docs/images/buckshot3-gui.png)
+
+*The running editor with a synthetic demo island, showing geometry editing, map lines, and the layer stack.*
+
 ## Requirements
 
 * **Python 3.10 or newer.** Get it from [python.org](https://www.python.org/downloads/).
