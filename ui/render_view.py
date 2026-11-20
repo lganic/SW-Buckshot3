@@ -4,16 +4,21 @@ render order at full strength, and optionally the lines, neighbour tiles and
 the reference image. It ignores the editor's visibility ticks, so it always
 shows what the exported .bin contains.
 
-It doubles as a minimap: the main canvas viewport is outlined, click or drag
-to move the canvas there, and the wheel zooms the canvas.
+It has its own view, independent of the editor: the wheel zooms about the
+cursor, left / middle / right drag pans, and the Fit button (or a middle-click) returns to
+the auto-fit view. The editor's viewport is outlined, and double-clicking moves
+the editor there.
 """
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..core.constants import (RENDER_ORDER, LAYER_COLORS, CHANNEL_COLORS, NUM_CHANNELS,
                               BASE_COLOR, SLOT_OFFSETS, TILE_HALF)
 
-LINE_WIDTH = 4.0     # world units, matches the quad width sw_ducky gives exported paths
+LINE_WIDTH = 4.0     # world units (sw_ducky's path quad width), applied at the fit-view scale
 MARGIN = 6
+ZOOM_STEP = 1.18
+MAX_SCALE = 500.0    # screen px per world unit, same ceiling as the editor
+DRAG_START_PX = 3
 
 
 class RenderView(QtWidgets.QWidget):
@@ -28,14 +33,17 @@ class RenderView(QtWidgets.QWidget):
         self.show_reference = False
         self.show_viewport = True
         self._cache = None            # (key, QPixmap)
-        self._dragging = False
+        self._view = None             # None = auto-fit, else (centre x, centre y, scale)
+        self._pan = None              # active drag: {'last', 'start', 'button', 'moved'}
         self.hover_text = ''
         doc.changed.connect(self._invalidate)
         state.changed.connect(self._on_state)
         if canvas is not None and hasattr(canvas, 'viewChanged'):
             canvas.viewChanged.connect(self.update)
+        self.setCursor(QtCore.Qt.OpenHandCursor)
         self.setToolTip('The finished tile, as it will be exported.\n'
-                        'Click or drag to move the editor there; scroll to zoom the editor.')
+                        'Scroll to zoom, drag to pan, middle-click to fit.\n'
+                        'Double-click to move the editor there.')
 
     def sizeHint(self):
         return QtCore.QSize(300, 340)
@@ -64,25 +72,56 @@ class RenderView(QtWidgets.QWidget):
                 r = r.united(QtCore.QRectF(ox - TILE_HALF, oy - TILE_HALF, 1000, 1000))
         return r
 
-    def _transform(self) -> QtGui.QTransform:
+    def _fit_scale(self) -> float:
         ext = self._world_extent()
         w, h = max(1, self.width() - 2 * MARGIN), max(1, self.height() - 2 * MARGIN)
-        s = min(w / ext.width(), h / ext.height())
+        return min(w / ext.width(), h / ext.height())
+
+    def _view_params(self):
+        if self._view is None:
+            c = self._world_extent().center()
+            return c.x(), c.y(), self._fit_scale()
+        return self._view
+
+    def _transform(self) -> QtGui.QTransform:
+        cx, cy, s = self._view_params()
         t = QtGui.QTransform()
         t.translate(self.width() / 2, self.height() / 2)
         t.scale(s, -s)
-        t.translate(-ext.center().x(), -ext.center().y())
+        t.translate(-cx, -cy)
         return t
 
     def _to_world(self, pos):
-        inv, ok = self._transform().inverted()
-        p = inv.map(QtCore.QPointF(pos))
-        return p.x(), p.y()
+        cx, cy, s = self._view_params()
+        return ((pos.x() - self.width() / 2) / s + cx,
+                -(pos.y() - self.height() / 2) / s + cy)
+
+    # ------------------------------------------------------------------ view
+    def fit(self):
+        """Back to the auto-fit view, which follows resizes and the neighbour toggle."""
+        self._view = None
+        self.update()
+
+    def zoom_at(self, factor, pos=None):
+        """Multiply the scale by factor, keeping the world point under pos fixed."""
+        if pos is None:
+            pos = QtCore.QPointF(self.width() / 2, self.height() / 2)
+        wx, wy = self._to_world(pos)
+        _, _, s = self._view_params()
+        s = max(self._fit_scale() * 0.5, min(MAX_SCALE, s * factor))
+        self._view = (wx - (pos.x() - self.width() / 2) / s,
+                      wy + (pos.y() - self.height() / 2) / s, s)
+        self.update()
+
+    def pan_by(self, d: QtCore.QPointF):
+        cx, cy, s = self._view_params()
+        self._view = (cx - d.x() / s, cy + d.y() / s, s)
+        self.update()
 
     # ------------------------------------------------------------------ painting
     def _render_key(self):
         st = self.state
-        return (self.width(), self.height(), self.devicePixelRatioF(),
+        return (self.width(), self.height(), self.devicePixelRatioF(), self._view_params(),
                 self.show_lines, self.show_neighbours, self.show_reference,
                 id(st.background), tuple(sorted((s, id(n)) for s, n in st.neighbours.items())))
 
@@ -98,11 +137,18 @@ class RenderView(QtWidgets.QWidget):
 
         def draw_image(ref, ox, oy, opacity=1.0):
             screen = T.mapRect(QtCore.QRectF(ox - TILE_HALF, oy - TILE_HALF, 1000, 1000))
+            vis = screen.intersected(QtCore.QRectF(self.rect()))
+            if vis.isEmpty():
+                return
+            # only sample the visible part, so a deep zoom doesn't scale the whole image
             img = ref.pixmap_for(screen.width() * dpr)
+            sx, sy = img.width() / screen.width(), img.height() / screen.height()
+            src = QtCore.QRectF((vis.x() - screen.x()) * sx, (vis.y() - screen.y()) * sy,
+                                vis.width() * sx, vis.height() * sy)
             p.save()
             p.setOpacity(opacity)
-            p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, True)
-            p.drawPixmap(screen, img, QtCore.QRectF(img.rect()))
+            p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, sx > dpr)
+            p.drawPixmap(vis, img, src)
             p.restore()
 
         if self.show_neighbours:
@@ -123,8 +169,8 @@ class RenderView(QtWidgets.QWidget):
             p.drawPath(self.paths.fill(('layer', name)))
 
         if self.show_lines:
-            px = abs(T.m11())
-            pen_w = max(1.0, LINE_WIDTH * px)
+            # sized from the fit view, not the zoom, so lines stay thin when zoomed in
+            pen_w = max(1.0, LINE_WIDTH * self._fit_scale())
             p.setBrush(QtCore.Qt.NoBrush)
             for ch in range(NUM_CHANNELS):
                 if not self.doc.channels[ch].polys:
@@ -169,6 +215,18 @@ class RenderView(QtWidgets.QWidget):
                 p.setBrush(QtGui.QColor(255, 220, 90, 28))
                 p.drawRect(vr)
 
+        if self._view is not None:
+            # how far in we are relative to the fit view
+            label = f'{self._view[2] / self._fit_scale():.1f}×'
+            fm = p.fontMetrics()
+            r = QtCore.QRectF(self.width() - fm.horizontalAdvance(label) - 16, 4,
+                              fm.horizontalAdvance(label) + 12, fm.height() + 4)
+            p.setPen(QtCore.Qt.NoPen)
+            p.setBrush(QtGui.QColor(15, 17, 21, 200))
+            p.drawRoundedRect(r, 4, 4)
+            p.setPen(QtGui.QColor(230, 232, 236))
+            p.drawText(r, QtCore.Qt.AlignCenter, label)
+
         if self.hover_text:
             fm = p.fontMetrics()
             r = QtCore.QRectF(4, self.height() - fm.height() - 8, fm.horizontalAdvance(self.hover_text) + 12,
@@ -203,29 +261,43 @@ class RenderView(QtWidgets.QWidget):
         self.canvas.center = QtCore.QPointF(x, y)
         self.canvas.update()
 
+    PAN_BUTTONS = (QtCore.Qt.LeftButton, QtCore.Qt.MiddleButton, QtCore.Qt.RightButton)
+
     def mousePressEvent(self, e):
+        if e.button() in self.PAN_BUTTONS and self._pan is None:
+            pos = e.position()
+            self._pan = {'last': pos, 'start': pos, 'button': e.button(), 'moved': False}
+            self.setCursor(QtCore.Qt.ClosedHandCursor)
+
+    def mouseDoubleClickEvent(self, e):
         if e.button() == QtCore.Qt.LeftButton:
-            self._dragging = True
             self._goto(e.position())
 
     def mouseMoveEvent(self, e):
-        if self._dragging:
-            self._goto(e.position())
-        text = self._describe(*self._to_world(e.position()))
+        pos = e.position()
+        if self._pan:
+            if (pos - self._pan['start']).manhattanLength() > DRAG_START_PX:
+                self._pan['moved'] = True
+            if self._pan['moved']:
+                self.pan_by(pos - self._pan['last'])
+                self._pan['last'] = pos
+        text = self._describe(*self._to_world(pos))
         if text != self.hover_text:
             self.hover_text = text
             self.update()
 
     def mouseReleaseEvent(self, e):
-        self._dragging = False
+        if self._pan and e.button() == self._pan['button']:
+            was, self._pan = self._pan, None
+            self.setCursor(QtCore.Qt.OpenHandCursor)
+            if was['button'] == QtCore.Qt.MiddleButton and not was['moved']:
+                self.fit()
 
     def leaveEvent(self, e):
         self.hover_text = ''
         self.update()
 
     def wheelEvent(self, e):
-        if self.canvas is None or not e.angleDelta().y():
-            return
-        c = self.canvas
-        c.zoom = max(0.02, min(500.0, c.zoom * (1.18 if e.angleDelta().y() > 0 else 1 / 1.18)))
-        c.update()
+        dy = e.angleDelta().y()
+        if dy:
+            self.zoom_at(ZOOM_STEP if dy > 0 else 1 / ZOOM_STEP, e.position())

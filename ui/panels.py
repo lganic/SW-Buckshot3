@@ -187,6 +187,11 @@ class LayersPanel(QtWidgets.QWidget):
             b.setChecked(getattr(self.render, attr))
             b.toggled.connect(lambda v, a=attr: self.render.set_option(a, v))
             ol.addWidget(b)
+        fit = QtWidgets.QToolButton()
+        fit.setText('Fit')
+        fit.setToolTip('Zoom the render back out to fit the tile (or middle-click the render)')
+        fit.clicked.connect(self.render.fit)
+        ol.addWidget(fit)
 
         self.setStyleSheet('QToolButton { padding: 2px 6px; border: 1px solid transparent; border-radius: 3px; }'
                            'QToolButton:hover { border-color: #5a6270; }'

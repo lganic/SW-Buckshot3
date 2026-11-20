@@ -106,7 +106,8 @@ The folder can have any name, so a ZIP extracted as `SW-Buckshot3-main` works th
    * **Layers**: an exploded view of all 11 layers in draw order, with the lines as the top sheet. Click a sheet to edit it.
    * **Render**: the finished tile, flat, exactly as it will export (it ignores the visibility ticks). Toggles add the
      lines, neighbour tiles, a 50% reference image overlay, and an outline of the editor's view. Hover to see the
-     topmost layer under the cursor. Click or drag to move the editor there; scroll to zoom the editor.
+     topmost layer under the cursor. It has its own view: scroll to zoom about the cursor, drag to pan,
+     and **Fit** (or middle-click) to zoom back out. Double-click to move the editor there.
 
    The lists below toggle visibility and show counts; double-click a channel to rename it.
 
