@@ -178,7 +178,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if tool in tools:
             self.state.set_tool(tool)
 
-    PAN_KEYS = {QtCore.Qt.Key_W, QtCore.Qt.Key_A, QtCore.Qt.Key_S, QtCore.Qt.Key_D}
+    PAN_KEYS = {QtCore.Qt.Key_W, QtCore.Qt.Key_A, QtCore.Qt.Key_S, QtCore.Qt.Key_D,
+                QtCore.Qt.Key_Up, QtCore.Qt.Key_Down}
+    ARROW_KEYS = {QtCore.Qt.Key_Up, QtCore.Qt.Key_Down}
+    # widgets that use Up / Down themselves; arrow zoom stays out of their way while they have focus
+    ARROW_WIDGETS = (QtWidgets.QAbstractItemView, QtWidgets.QComboBox, QtWidgets.QAbstractSlider)
 
     def eventFilter(self, obj, e):
         t = e.type()
@@ -191,6 +195,8 @@ class MainWindow(QtWidgets.QMainWindow):
             typing = isinstance(focus, (QtWidgets.QLineEdit, QtWidgets.QAbstractSpinBox,
                                         QtWidgets.QTextEdit, QtWidgets.QPlainTextEdit))
             mods = e.modifiers() & (QtCore.Qt.ControlModifier | QtCore.Qt.AltModifier | QtCore.Qt.MetaModifier)
+            if e.key() in self.ARROW_KEYS and isinstance(focus, self.ARROW_WIDGETS):
+                typing = True
             if typing or mods or QtWidgets.QApplication.activeModalWidget() is not None:
                 return False
             if t == QtCore.QEvent.KeyPress and not e.isAutoRepeat():

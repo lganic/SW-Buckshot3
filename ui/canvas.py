@@ -5,7 +5,7 @@ The editor canvas. One widget handles both modes:
   Lines mode     - draw connected lines point to point, move points, split edges, weld points.
 
 Tile coordinates are +Y up; the neighbour tiles sit at +-1000 m around the centre tile.
-Navigation: wheel = zoom, middle / right drag (or Space + left drag) = pan.
+Navigation: wheel or held Up / Down = zoom, middle / right drag (or Space + left drag) = pan.
 """
 import math
 
@@ -56,7 +56,7 @@ class Canvas(QtWidgets.QWidget):
         self.mouse_world = (0.0, 0.0)
         self.snapped = None              # (x, y, kind) of the current snapped cursor
 
-        # WASD panning: held keys move the view at a steady on-screen speed
+        # WASD panning / Up-Down zooming: held keys move the view at a steady on-screen speed
         self.pan_keys = set()
         self._pan_timer = QtCore.QTimer(self)
         self._pan_timer.setInterval(16)
@@ -103,10 +103,21 @@ class Canvas(QtWidgets.QWidget):
             r = r.united(QtCore.QRectF(ox - TILE_HALF, oy - TILE_HALF, 1000, 1000))
         self.fit_rect(r)
 
-    # ------------------------------------------------------------------ keyboard panning
+    # ------------------------------------------------------------------ keyboard panning / zooming
     PAN_SPEED = 900.0      # screen px per second (Shift = 3x)
     PAN_DIRS = {QtCore.Qt.Key_W: (0, 1), QtCore.Qt.Key_S: (0, -1),
                 QtCore.Qt.Key_A: (-1, 0), QtCore.Qt.Key_D: (1, 0)}
+    ZOOM_SPEED = 2.0       # zoom doublings per second (Shift = 3x)
+    ZOOM_DIRS = {QtCore.Qt.Key_Up: 1, QtCore.Qt.Key_Down: -1}
+
+    def zoom_at(self, factor, screen_pos=None):
+        """Multiply the zoom by factor, keeping the world point under screen_pos fixed."""
+        if screen_pos is None:
+            screen_pos = QtCore.QPointF(self.width() / 2, self.height() / 2)
+        before = self.to_world(screen_pos)
+        self.zoom = max(0.02, min(500.0, self.zoom * factor))
+        after = self.to_world(screen_pos)
+        self.center += QtCore.QPointF(before[0] - after[0], before[1] - after[1])
 
     def set_pan_key(self, key, down):
         if down:
@@ -125,14 +136,20 @@ class Canvas(QtWidgets.QWidget):
 
     def _pan_tick(self):
         dt = min(0.1, self._pan_clock.restart() / 1000.0)
-        dx = sum(self.PAN_DIRS[k][0] for k in self.pan_keys)
-        dy = sum(self.PAN_DIRS[k][1] for k in self.pan_keys)
-        if not dx and not dy:
+        dx = sum(self.PAN_DIRS[k][0] for k in self.pan_keys if k in self.PAN_DIRS)
+        dy = sum(self.PAN_DIRS[k][1] for k in self.pan_keys if k in self.PAN_DIRS)
+        dz = sum(self.ZOOM_DIRS[k] for k in self.pan_keys if k in self.ZOOM_DIRS)
+        if not dx and not dy and not dz:
             return
-        n = (dx * dx + dy * dy) ** 0.5
-        fast = QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.ShiftModifier
-        step = self.PAN_SPEED * (3 if fast else 1) * dt / self.zoom
-        self.center += QtCore.QPointF(dx / n * step, dy / n * step)
+        fast = 3 if QtWidgets.QApplication.keyboardModifiers() & QtCore.Qt.ShiftModifier else 1
+        if dz:
+            # zoom about the cursor when it is over the canvas, otherwise about the view centre
+            self.zoom_at(2 ** (dz * self.ZOOM_SPEED * fast * dt),
+                         self.mouse_screen if self.underMouse() else None)
+        if dx or dy:
+            n = (dx * dx + dy * dy) ** 0.5
+            step = self.PAN_SPEED * fast * dt / self.zoom
+            self.center += QtCore.QPointF(dx / n * step, dy / n * step)
         if self.underMouse():
             # the world slides under a still cursor: refresh snapping, drags and tool previews
             self.mouseMoveEvent(QtGui.QMouseEvent(
@@ -602,10 +619,7 @@ class Canvas(QtWidgets.QWidget):
         dy = e.angleDelta().y()
         if not dy:
             return
-        before = self.to_world(e.position())
-        self.zoom = max(0.02, min(500.0, self.zoom * (1.18 if dy > 0 else 1 / 1.18)))
-        after = self.to_world(e.position())
-        self.center += QtCore.QPointF(before[0] - after[0], before[1] - after[1])
+        self.zoom_at(1.18 if dy > 0 else 1 / 1.18, e.position())
         self.update()
 
     def keyPressEvent(self, e):

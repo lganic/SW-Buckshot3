@@ -97,7 +97,7 @@ The folder can have any name, so a ZIP extracted as `SW-Buckshot3-main` works th
    * `1`–`0` picks the layer (geometry) or channel (lines). Del deletes, Esc cancels, `F` fits the tile, `Shift+F` fits the neighbours too.
    * Snapping: the grid (toolbar), plus existing points within a few pixels. These include vertices on other layers
      and the **border points of neighbour tiles** (yellow diamonds), so edges line up across tiles. Hold Alt to place freely.
-   * `W` `A` `S` `D` pan (hold Shift for faster). Wheel zooms. Middle/right drag or Space+drag pans too.
+   * `W` `A` `S` `D` pan, `↑` / `↓` zoom in / out (hold Shift for faster). Wheel zooms too. Middle/right drag or Space+drag pans too.
    * Line points show as small white dots in both modes, so lines are easy to line up with triangle vertices
      (which have a black outline).
    * Undo/redo (Ctrl+Z / Ctrl+Y) is one history covering geometry and lines.
