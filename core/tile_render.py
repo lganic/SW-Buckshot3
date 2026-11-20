@@ -101,4 +101,13 @@ class SceneRasteriser:
             p.setPen(pen)
             for poly in polylines:
                 p.drawPolyline(QtGui.QPolygonF([QtCore.QPointF(x, y) for x, y in poly]))
+            # green dot on every point of every line (each segment's start and end),
+            # to help line things up
+            p.resetTransform()
+            r = max(1.5, width_px * scale * 1.5)
+            p.setPen(QtCore.Qt.NoPen)
+            p.setBrush(QtGui.QColor(0, 255, 0))
+            for poly in polylines:
+                for x, y in poly:
+                    p.drawEllipse(tr.map(QtCore.QPointF(float(x), float(y))), r, r)
             p.end()
