@@ -335,5 +335,239 @@ PRESETS = {
     # Arctic
     'Arctic Playerbase Bridge: arctic_tile_21': ((362.031525, 15.122282, 230.863602), -30.0),
     'Arctic Playerbase Bridge: mega_island_3_1': ((489.213928, 12.775476, 460.67038), 90.0),
+    # Single-tile buildings (model placed on one tile only), grouped by tile
+    # arctic_island_oil_refinery
+    'Arctic Oil Refinery: arctic_island_oil_refinery': ((156.245239, 7.67, -60.045685), -135.0),
+    'Arctic Oil Refinery Platform: arctic_island_oil_refinery': ((156.245239, 7.67, -60.045685), -135.0),
+    'Arctic Oil Refinery Pipes: arctic_island_oil_refinery': ((156.245239, 7.67, -60.045685), -135.0),
+    # arctic_island_playerbase
+    'Arctic Island Playerbase Runway: arctic_island_playerbase': ((-147.980988, 23.338436, 64.044479), -42.0),
+    # arctic_island_shipbreaking
+    'Arctic Shipbreaking Yard: arctic_island_shipbreaking': ((83.352524, 8.84146, -143.725922), -47.5),
+    'Arctic Shipbreaking Yard Buildings: arctic_island_shipbreaking': ((83.352524, 8.84146, -143.725922), -47.5),
+    # arctic_island_survey
+    'Arctic Island Survey Modules: arctic_island_survey': ((-96.30983, 21.890718, 6.065075), 180.0),
+    'Arctic Island Survey Modules Science End: arctic_island_survey': ((-96.309998, 21.890718, 6.06), 180.0),
+    'Arctic Island Survey Module Main: arctic_island_survey': ((-96.309998, 21.890718, 6.065), 180.0),
+    'Arctic Island Survey Modules Science: arctic_island_survey': ((-96.309998, 21.890718, 6.06), 180.0),
+    'Arctic Island Survey Module Bunks: arctic_island_survey': ((-96.30983, 21.890718, 6.065075), 180.0),
+    'Arctic Island Survey Modules Science End Top: arctic_island_survey': ((-96.309998, 21.890718, 6.06), 180.0),
+    # arctic_tile_12_oilrig
+    'Arctic Tile 12 Oil Rig Base: arctic_tile_12_oilrig': ((166.733154, 2.650543, -29.132385), 180.0),
+    'Arctic Tile 12 Oil Rig Storage: arctic_tile_12_oilrig': ((166.733154, 2.650543, -29.132385), 180.0),
+    'Arctic Tile 12 Oil Rig Drill: arctic_tile_12_oilrig': ((166.733154, 2.650543, -29.132385), 180.0),
+    'Arctic Tile 12 Oil Rig Building 01: arctic_tile_12_oilrig': ((166.733154, 2.650543, -29.132385), 180.0),
+    'Arctic Tile 12 Oil Rig Building 02: arctic_tile_12_oilrig': ((166.733154, 2.650543, -29.132385), 180.0),
+    # arctic_tile_22
+    'Arctic Tile 22 Research Base: arctic_tile_22': ((-367.279327, 29.383263, -270.156372), 0.0),
+    # arctic_tile_23
+    'Arctic Tile 23 Fishing: arctic_tile_23': ((-212.485703, 6.644732, -173.836121), 90.0),
+    'Arctic Tile 23 Fishing Cabins: arctic_tile_23': ((-212.485703, 6.644732, -173.836121), 90.0),
+    # arid_island_10_6
+    'Gold Lab: arid_island_10_6': ((-325.011963, 29.543676, -328.968872), 45.0),
+    # arid_island_11_12
+    'Animal Run: arid_island_11_12': ((465.092346, 15.546829, 74.235748), -45.0),
+    'Livestock Large Barn: arid_island_11_12 #1': ((290.047089, 20.743816, -250.359344), 90.0),
+    'Livestock Large Barn: arid_island_11_12 #2': ((290.665497, 20.737827, -237.312881), 0.0),
+    'Livestock Barn Base: arid_island_11_12 #1': ((382.064423, 20.737827, -235.784317), -90.0),
+    'Livestock Barn Base: arid_island_11_12 #2': ((363.883881, 20.737827, -235.784317), -90.0),
+    # arid_island_11_14
+    'Arid Mainland Train Terminal: arid_island_11_14': ((61.089828, 29.541222, -113.030212), -30.0),
+    'Arid Warehouse: arid_island_11_14': ((308.368378, 29.616001, -119.102013), -3.0),
+    # arid_island_12_10
+    'Arctic Tile 22 Train Depot: arid_island_12_10': ((-161.63269, 46.86924, 324.087616), 93.5),
+    # arid_island_13_10
+    'Satellite Dish: arid_island_13_10': ((-383.980774, 88.467651, -269.272278), 0.0),
+    'Satellite Dish Tower A: arid_island_13_10 #1': ((-115.044212, 73.209999, -0.335634), 40.0),
+    'Satellite Dish Tower A: arid_island_13_10 #2': ((-115.044212, 73.209999, -0.335634), -50.0),
+    'Satellite Dish Tower A: arid_island_13_10 #3': ((-115.044212, 73.211227, -0.335634), 130.0),
+    'Satellite Dish Tower A: arid_island_13_10 #4': ((-115.044212, 73.209999, -0.335634), -140.0),
+    # arid_island_13_6
+    'Shipping Yard Shelf: arid_island_13_6 #1': ((-458.352905, 29.795494, -196.748795), 58.0),
+    'Shipping Yard Shelf: arid_island_13_6 #2': ((-437.327789, 29.795494, -230.396042), 58.0),
+    'Shipping Yard Shelf: arid_island_13_6 #3': ((-420.636871, 29.795494, -219.9664), 58.0),
+    'Shipping Yard Shelf: arid_island_13_6 #4': ((-441.560242, 29.795494, -186.255569), 58.0),
+    'Shipping Yard Shelf: arid_island_13_6 #5': ((-425.601868, 29.795494, -176.283661), 58.0),
+    'Storage Container Office: arid_island_13_6': ((-407.131226, 29.904993, -205.009933), 58.0),
+    'Storage Extra: arid_island_13_6 #1': ((-437.327789, 29.795494, -230.396042), 58.0),
+    'Storage Extra: arid_island_13_6 #2': ((-441.560242, 29.795494, -186.255569), -122.0),
+    # arid_island_15_5
+    'Arid Gold Refining Plant: arid_island_15_5': ((-299.236938, 28.98, -161.49704), 2.5),
+    # arid_island_16_10
+    'Separator: arid_island_16_10': ((263.675201, 17.066013, -245.685333), 150.0),
+    # arid_island_16_14
+    'Coal Mine Shaft: arid_island_16_14': ((-330.424377, 136.912476, -267.592621), 0.0),
+    # arid_island_17_4
+    'Old Coal Building: arid_island_17_4 #1': ((-195.669449, 166.999344, 161.952957), 75.0),
+    'Old Coal Building: arid_island_17_4 #2': ((-184.345596, 166.761581, 121.049461), 75.0),
+    # arid_island_19_5
+    'Steelmill Furnace: arid_island_19_5': ((88.012741, 2.540588, -121.061913), 0.0),
+    'Steelmill Building: arid_island_19_5': ((-108.446815, 2.540588, -122.448555), 0.0),
+    'Steelmill Pipes: arid_island_19_5': ((-67.370407, 2.434968, 0.401737), 0.0),
+    # arid_island_23_14
+    # arid_island_26_14
+    'Arid Mainland Drydock: arid_island_26_14': ((376.85788, 8.6347, -283.182861), 165.0),
+    'Arid Mainland Drydock Rails: arid_island_26_14': ((376.85788, 8.634335, -283.182861), 165.0),
+    'Arid Mainland Drydock Cover: arid_island_26_14': ((376.85788, 8.634335, -283.182861), 165.0),
+    'Arid Mainland Drydock Cover Rails: arid_island_26_14 #1': ((323.447693, 8.188969, 64.904907), 165.0),
+    'Arid Mainland Drydock Cover Rails: arid_island_26_14 #2': ((285.999451, 8.188969, -125.801506), -15.0),
+    'Arid Mainland Drydock Rails B: arid_island_26_14': ((376.85788, 8.634335, -283.182861), 165.0),
+    'Arid Runway: arid_island_26_14': ((-210.802505, 8.631, -632.515747), -105.0),
+    # arid_island_4_12
+    'Arid Buildings House F: arid_island_4_12': ((169.546722, 15.686121, 283.701569), 40.0),
+    # arid_island_4_14
+    'Ford Bridge: arid_island_4_14': ((-408.263611, -5.02967, -262.695282), -35.0),
+    # arid_island_6_7
+    'Arid Mainland Train Terminal Small: arid_island_6_7': ((41.994267, 67.392487, -442.533966), -152.0),
+    'Arid Mainland Train Terminal Single: arid_island_6_7 #1': ((173.387589, 67.668991, -461.833588), -154.0),
+    'Arid Mainland Train Terminal Single: arid_island_6_7 #2': ((164.715622, 67.668991, -479.61377), -154.0),
+    # arid_island_7_7
+    'Arid Buildings Deserted: arid_island_7_7': ((-421.269104, 173.012161, -96.400742), 0.0),
+    # arid_island_8_13
+    'Nuclear Storage Yard: arid_island_8_13': ((-400.689056, 71.485161, -340.878845), 0.0),
+    'Nuclear Storage Yard B: arid_island_8_13': ((-400.689056, 71.485161, -340.878845), 0.0),
+    'Nuclear Storage Yard Buildings: arid_island_8_13': ((-400.689056, 71.485161, -340.878845), 0.0),
+    'Nuclear Storage Yard Buildings B: arid_island_8_13': ((-400.689056, 71.485161, -340.878845), 0.0),
+    'Nuclear Storage Yard Buildings C: arid_island_8_13': ((-400.689056, 71.485161, -340.878845), 0.0),
+    # arid_island_8_14
+    'Nuclear Plant Buildings: arid_island_8_14': ((-129.546585, 3.369868, 296.498718), 0.0),
+    'Nuclear Plant Reactor: arid_island_8_14': ((-5.464652, 7.729352, 338.738129), 0.0),
+    'Nuclear Plant Turbine: arid_island_8_14': ((-8.375053, 1.575828, 309.645416), 0.0),
+    'Nuclear Plant Reactor Room: arid_island_8_14': ((-9.126102, 44.775131, 355.022522), 0.0),
+    'Nuclear Plant Reactor Room B: arid_island_8_14': ((-9.126102, 44.80809, 355.022522), 0.0),
+    'Nuclear Plant Stairs: arid_island_8_14': ((-129.546585, 3.369868, 296.498718), 0.0),
+    'Nuclear Plant Stairs B: arid_island_8_14': ((-129.546585, 3.369868, 296.498718), 0.0),
+    'Nuclear Plant Entryways: arid_island_8_14': ((-129.546585, 3.369868, 296.498718), 0.0),
+    'Nuclear Plant Coolingtower: arid_island_8_14 #1': ((-121.72657, 3.369868, -39.041382), 0.0),
+    'Nuclear Plant Coolingtower: arid_island_8_14 #2': ((-383.568329, 3.369868, -39.041382), 0.0),
+    'Nuclear Outsidearea: arid_island_8_14': ((-386.374969, 0.957879, 300.219635), 0.0),
+    'Nuclear Substation: arid_island_8_14': ((-295.619293, 8.33379, 297.457855), 0.0),
+    'Nuclear Substation B: arid_island_8_14': ((-295.619293, 8.33379, 297.457855), 0.0),
+    'Nuclear Substation C: arid_island_8_14': ((-295.619293, 8.33379, 297.457855), 0.0),
+    'Nuclear Plant Reactor Walkway: arid_island_8_14': ((-5.557814, 7.729352, 338.718018), 0.0),
+    'Centrifuge: arid_island_8_14': ((330.101807, 8.061535, 247.867142), 0.0),
+    # arid_island_8_15
+    'Nuclear Dock: arid_island_8_15': ((-499.66568, -73.316208, -450.15155), 0.0),
+    'Nuclear Outsidearea B: arid_island_8_15': ((-282.214355, 8.361946, -450.15155), 0.0),
+    'Nuclear Dock Assets: arid_island_8_15': ((-499.66568, -73.316208, -450.15155), 0.0),
+    # island12
+    'Island 12 Cottage: island12': ((-32.083038, 3.445757, 1.97864), 0.0),
+    # island_13
+    'Island 13 Building: island_13': ((39.156616, 17.973877, -23.087402), 0.0),
+    # island_15
+    'Ultimate Base Buildings: island_15': ((-226.165894, 4.654706, -93.274261), 0.0),
+    'Ultimate Base Control: island_15': ((-236.597916, 4.66, -96.204704), 0.0),
+    # island_17
+    'Island 17 Research Facility: island_17': ((65.825577, 19.100937, 27.075842), 179.645),
+    # island_18
+    'Island 18 Tower: island_18': ((-28.628555, 1.702324, -303.964264), 0.0),
+    'Island 18 Dock: island_18': ((49.948166, 4.936394, 106.635429), -179.991),
+    'Island 18 Lift: island_18': ((46.318359, 5.014287, 108.131622), 180.0),
+    'Island 18 Dock Control: island_18': ((49.871826, 4.914306, 106.609772), 180.0),
+    'Island 18 Buildings: island_18': ((45.799999, 0.621559, 114.875198), 180.0),
+    'Island 18 Reactor: island_18': ((45.869999, 0.61, 114.889984), 180.0),
+    'Island 18 Substation: island_18': ((130.879211, 1.014404, -87.37677), -90.0),
+    'Island 18 Transformers: island_18': ((130.969635, 1.014404, -87.3703), -90.0),
+    'Island 18 Turbine: island_18': ((45.84, 0.62, 114.889999), 180.0),
+    # island_24
+    'Island 24 Runway: island_24': ((-44.901726, 5.011811, -64.533058), 0.0),
+    'Island 24 Control Tower: island_24': ((-44.905128, 5.01, -64.529999), 0.0),
+    'Island 24 Control Tower Top: island_24': ((-44.905128, 5.01, -64.529999), 0.0),
+    # island_25
+    'Island 25 Boatyard: island_25': ((13.7789, 5.2435, -63.73), 0.0),
+    'Island 25 Buildings: island_25': ((13.785385, 5.24, -63.73), 0.0),
+    # island_27_airbase
+    'Island 27 Runway: island_27_airbase': ((99.733597, 23.504456, -227.302948), 0.0),
+    # island_3
+    'Island 03 Hanger: island_3': ((-48.0, 9.419373, -167.0), 0.0),
+    'Island 03 Runway: island_3': ((-48.0, 9.42, -167.0), 0.0),
+    'Island 03 Tower: island_3': ((-48.0, 9.42, -167.0), 0.0),
+    'Drop Off Tent: island_3': ((-94.001343, 11.06958, 86.95047), 0.0),
+    # island_33_tile_05
+    'Island 33 Hol Cottage: island_33_tile_05': ((-244.138885, 9.588725, 56.069023), -142.883),
+    # island_33_tile_06
+    'Island 33 06 Industrial: island_33_tile_06': ((-321.082245, 7.6623, 304.625946), 90.0),
+    'Island 33 06 Industrial 02: island_33_tile_06': ((-321.082245, 7.6623, 304.625946), 90.0),
+    # island_33_tile_07
+    'Island 33 Lighthouse: island_33_tile_07': ((218.636307, 18.434042, 26.512835), -160.0),
+    'Island 33 Lighthouse Cottage: island_33_tile_07': ((229.67366, 13.227865, 80.689468), 160.0),
+    # island_34_military
+    'Island 34 Runways: island_34_military': ((-113.010406, 22.111389, -143.182739), 31.585),
+    'Island 34 Militaryhangar: island_34_military': ((85.664871, 22.111784, -28.670349), -58.0),
+    'Island 34 Control Building: island_34_military': ((-173.057541, 21.968262, -82.549744), 117.116),
+    'Island 34 Bunks: island_34_military #1': ((-58.283951, 21.93985, 56.898224), 30.929),
+    'Island 34 Bunks: island_34_military #2': ((-68.768204, 21.93985, 39.400391), 30.929),
+    'Island 34 Bunks: island_34_military #3': ((-29.497971, 21.93985, 75.428848), -149.07),
+    'Island 34 Bunks: island_34_military #4': ((-47.1371, 21.93985, 75.501923), 30.929),
+    'Island 34 Bunks: island_34_military #5': ((-40.534164, 21.939848, 56.900002), -149.07),
+    'Island 34 Bunks: island_34_military #6': ((-51.140579, 21.939846, 39.400002), -149.07),
+    'Island 34 Towers: island_34_military': ((-98.325714, 22.111511, 49.949677), 24.981),
+    # island_35_seafort
+    'Island 35 Seafort: island_35_seafort': ((-74.97821, 12.81885, -9.128805), 0.0),
+    'Island 35 Seafort Tower: island_35_seafort': ((-74.97821, 12.81885, -9.128805), 0.0),
+    # island_36_oil_refinery
+    'Island 36 Dock: island_36_oil_refinery': ((-51.75666, 4.175196, -81.529831), 0.0),
+    'Island 36 Refinery: island_36_oil_refinery': ((-43.357651, 20.685337, 23.029497), 138.155),
+    'Island 36 Refinery Base: island_36_oil_refinery': ((-43.357651, 20.685337, 23.029497), 138.155),
+    'Island 36 Refinery Towers: island_36_oil_refinery': ((-43.357651, 20.685337, 23.029497), 138.155),
+    'Island 36 Refinery Floors: island_36_oil_refinery': ((-43.357651, 20.685337, 23.029497), 138.155),
+    # island_39_observatory
+    'Island 39 Observatory: island_39_observatory': ((37.540295, 7.849243, 37.123482), -123.902),
+    # island_40_castle_tourism
+    'Island 40 Castle: island_40_castle_tourism': ((19.848846, 15.046509, -3.773803), 56.728),
+    # island_41_underwater_mining
+    'Island 41 Underwater Mining Base: island_41_underwater_mining': ((-69.545425, 6.770912, -49.234333), 0.0),
+    'Island 41 Underwater Mining Building: island_41_underwater_mining': ((-69.545425, 6.770912, -49.234333), 0.0),
+    'Island 41 Underwater Mining Control: island_41_underwater_mining': ((-69.545425, 6.77, -49.234333), 0.0),
+    'Island 41 Underwater Mining Machinery: island_41_underwater_mining': ((-69.545425, 6.770912, -49.234333), 0.0),
+    'Uranium Refining 4: island_41_underwater_mining': ((-11.928102, 4.712827, -15.301921), 0.0),
+    # island_43_multiplayer_base
+    'Island 43 Multiplayer Dock: island_43_multiplayer_base': ((60.71703, 7.35, -54.833088), 45.0),
+    'Island 43 Multiplayer Hangar: island_43_multiplayer_base': ((-130.965271, 13.856232, 41.040447), 45.0),
+    'Island 43 Multiplayer Building: island_43_multiplayer_base': ((-130.965271, 13.856232, 41.040447), 45.0),
+    # mega_island_10_7
+    'Grain Silo: mega_island_10_7': ((-99.601997, 7.423017, 203.345642), 0.0),
+    'Grain Storage: mega_island_10_7': ((-135.423965, 7.423017, 243.622223), 90.0),
+    # mega_island_12_7
+    'Mainland Train Terminal Small: mega_island_12_7': ((-231.140823, 2.996868, -439.395233), -90.0),
+    # mega_island_5_2
+    'Sawmill: mega_island_5_2': ((407.206329, 6.32924, 499.486389), 90.0),
+    # mega_island_8_7
+    'Mainland Quayside: mega_island_8_7': ((77.506142, 2.50695, 120.229919), 105.0),
+    # oil_rig
+    'Oil Rig: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    'Oil Rig Control Room: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    'Oil Rig Derrick: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    'Oil Rig Drill: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    'Oil Rig Flare: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    'Oil Rig Helipad: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    'Oil Rig Platform: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    'Oil Rig Stairs: oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),
+    # oil_rig_medium
+    'Oil Rig Medium Platform: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Derrick: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Accommodation: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Acc 02: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Acc Stairs: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Deck 01: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Deck 02: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Deck 02 Building: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    'Oil Rig Medium Derrick Platform: oil_rig_medium': ((2.139901, 1.611443, -7.843423), 0.0),
+    # oil_rig_playerbase
+    'Oil Rig Playerbase: oil_rig_playerbase': ((0.0, -10.480804, 0.0), 0.0),
+    # seabed_shipwreck
+    'Seabed Shipwreck: seabed_shipwreck': ((0.0, -82.667358, 0.0), 0.0),
+    # seabed_shipwreck_02
+    'Seabed Shipwreck 02: seabed_shipwreck_02': ((0.0, -83.115601, 0.0), 0.0),
+    # volcanic_5_7
+    'Planewreck: volcanic_5_7': ((-71.316017, -142.521713, 189.678513), 0.0),
+    # volcanic_6_7
+    'Ancient Greek Temple B: volcanic_6_7 #2': ((410.816223, -83.245895, 201.971848), 180.0),
+    'Ancient Greek Parts C: volcanic_6_7': ((131.227036, -85.726822, 196.388168), 0.0),
+    # volcanic_7_5
+    'Shipwreck Mid: volcanic_7_5': ((-165.018707, -136.593796, 159.046494), 40.0),
+    'Shipwreck Front: volcanic_7_5': ((-165.018707, -136.593796, 159.046494), 40.0),
+    # wind_turbine
+    'Wind Turbine: wind_turbine': ((-1.168854, 20.350372, 0.0), 0.0),
+    'Wind Turbine Helipad: wind_turbine': ((-1.189514, 20.347076, 0.0), 0.0),
 }
-
