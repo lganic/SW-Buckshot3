@@ -14,6 +14,7 @@ from ..core.contours import extract_contours
 from ..core.meshfile import MeshPlacement, build_scene
 from ..core.tile_render import SceneRasteriser
 from .import_dialogs import PlacementPicker
+from .preset_picker import PresetPicker
 
 COLS = ['Mesh file', 'X', 'Height', 'Z', 'Yaw°', 'Contours']
 
@@ -104,17 +105,15 @@ class MeshRenderDialog(QtWidgets.QDialog):
         row = QtWidgets.QHBoxLayout()
         add = QtWidgets.QPushButton('Add mesh…')
         add.clicked.connect(self._add_meshes)
-        preset = QtWidgets.QToolButton()
-        preset.setText('Apply placement preset')
-        preset.setPopupMode(QtWidgets.QToolButton.InstantPopup)
-        menu = QtWidgets.QMenu(preset)
-        for name in PRESETS:
-            menu.addAction(name, lambda n=name: self._apply_preset(n))
-        preset.setMenu(menu)
+        self.preset_btn = QtWidgets.QPushButton('Apply placement preset…')
+        self.preset_btn.setToolTip('Search the known building / runway placements and apply one '
+                                   'to the selected mesh row(s)')
+        self.preset_btn.clicked.connect(self._open_presets)
+        self.preset_picker = None   # built on first use, then kept so the last search is remembered
         rem = QtWidgets.QPushButton('Remove')
         rem.clicked.connect(self._remove_rows)
         row.addWidget(add)
-        row.addWidget(preset)
+        row.addWidget(self.preset_btn)
         row.addStretch(1)
         row.addWidget(rem)
         gl.addLayout(row)
@@ -283,8 +282,20 @@ class MeshRenderDialog(QtWidgets.QDialog):
             self.table.removeRow(r)
         self._mark_stale()
 
+    def _selected_rows(self):
+        return sorted({i.row() for i in self.table.selectedIndexes()})
+
+    def _open_presets(self):
+        if not self._selected_rows():
+            QtWidgets.QMessageBox.information(self, 'Preset', 'Select the mesh row(s) to apply the preset to first.')
+            return
+        if self.preset_picker is None:
+            self.preset_picker = PresetPicker(PRESETS, self)
+            self.preset_picker.picked.connect(self._apply_preset)
+        self.preset_picker.popup(self.preset_btn)
+
     def _apply_preset(self, name):
-        rows = sorted({i.row() for i in self.table.selectedIndexes()})
+        rows = self._selected_rows()
         if not rows:
             QtWidgets.QMessageBox.information(self, 'Preset', 'Select the mesh row(s) to apply the preset to first.')
             return
