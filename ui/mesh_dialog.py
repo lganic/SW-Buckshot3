@@ -43,26 +43,142 @@ def default_settings():
 
 
 class PreviewWidget(QtWidgets.QWidget):
+    """
+    Shows the render. Wheel zooms about the cursor, left / middle / right drag pans,
+    double-click (or 0) fits it back. When zoomed past the small preview image's
+    resolution it draws from the full resolution image instead.
+    """
+    MAX_ZOOM = 64.0
 
     def __init__(self):
         super().__init__()
-        self.image = None
+        self.image = None          # small preview image (always drawn into)
+        self.full = None           # full resolution image, used when zoomed in
         self.setMinimumSize(360, 360)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setToolTip('Wheel: zoom · drag: pan · double-click: fit')
         self.message = 'Add meshes, then press Render'
+        self.zoom = 1.0
+        self.offset = QtCore.QPointF(0, 0)   # pan, in units of the fitted side length
+        self._drag = None
 
+    # ---------------------------------------------------------------- view maths
+    def _side(self):
+        return max(1.0, min(self.width(), self.height()) - 16.0)
+
+    def _fit_rect(self):
+        side = self._side()
+        return QtCore.QRectF((self.width() - side) / 2, (self.height() - side) / 2, side, side)
+
+    def _view_rect(self):
+        """The image's on-screen rect at the current zoom / pan."""
+        side = self._side()
+        s = side * self.zoom
+        return QtCore.QRectF(self.width() / 2 - s / 2 + self.offset.x() * side,
+                             self.height() / 2 - s / 2 + self.offset.y() * side, s, s)
+
+    def _clamp(self):
+        # the image edges can't come inside the fitted square, so nothing is lost off-screen
+        # and zooming back out to 1x always lands exactly on the fit
+        lim = (self.zoom - 1) / 2
+        self.offset = QtCore.QPointF(max(-lim, min(lim, self.offset.x())),
+                                     max(-lim, min(lim, self.offset.y())))
+
+    def zoom_at(self, factor, pos=None):
+        if pos is None:
+            pos = QtCore.QPointF(self.width() / 2, self.height() / 2)
+        r = self._view_rect()
+        u = (pos.x() - r.x()) / r.width()
+        v = (pos.y() - r.y()) / r.height()
+        self.zoom = max(1.0, min(self.MAX_ZOOM, self.zoom * factor))
+        side = self._side()
+        s = side * self.zoom
+        # keep the image point under pos fixed
+        self.offset = QtCore.QPointF((pos.x() - u * s - (self.width() / 2 - s / 2)) / side,
+                                     (pos.y() - v * s - (self.height() / 2 - s / 2)) / side)
+        self._clamp()
+        self.update()
+
+    def reset_view(self):
+        self.zoom = 1.0
+        self.offset = QtCore.QPointF(0, 0)
+        self.update()
+
+    # ---------------------------------------------------------------- input
+    def wheelEvent(self, e):
+        steps = e.angleDelta().y() / 120.0
+        if steps:
+            self.zoom_at(1.25 ** steps, e.position())
+        e.accept()
+
+    def mousePressEvent(self, e):
+        if e.button() in (QtCore.Qt.LeftButton, QtCore.Qt.MiddleButton, QtCore.Qt.RightButton):
+            self._drag = (e.position(), QtCore.QPointF(self.offset))
+            self.setCursor(QtCore.Qt.ClosedHandCursor)
+            e.accept()
+
+    def mouseMoveEvent(self, e):
+        if self._drag is not None:
+            start, off0 = self._drag
+            d = (e.position() - start) / self._side()
+            self.offset = off0 + d
+            self._clamp()
+            self.update()
+
+    def mouseReleaseEvent(self, e):
+        if self._drag is not None and not (e.buttons() & (QtCore.Qt.LeftButton | QtCore.Qt.MiddleButton
+                                                          | QtCore.Qt.RightButton)):
+            self._drag = None
+            self.unsetCursor()
+
+    def mouseDoubleClickEvent(self, e):
+        self.reset_view()
+
+    def keyPressEvent(self, e):
+        k = e.key()
+        if k in (QtCore.Qt.Key_Plus, QtCore.Qt.Key_Equal):
+            self.zoom_at(1.25)
+        elif k == QtCore.Qt.Key_Minus:
+            self.zoom_at(0.8)
+        elif k == QtCore.Qt.Key_0:
+            self.reset_view()
+        else:
+            super().keyPressEvent(e)
+
+    # ---------------------------------------------------------------- drawing
     def paintEvent(self, e):
         p = QtGui.QPainter(self)
         p.fillRect(self.rect(), QtGui.QColor(18, 20, 24))
-        side = min(self.width(), self.height()) - 16
-        r = QtCore.QRectF((self.width() - side) / 2, (self.height() - side) / 2, side, side)
+        r = self._view_rect()
         if self.image is not None:
-            p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-            p.drawImage(r, self.image)
+            # use the full resolution image once the preview would be upscaled, as long as
+            # that doesn't mean shrinking the full image more than 4x (it aliases badly)
+            img = self.image
+            if (self.full is not None and r.width() > img.width()
+                    and r.width() >= self.full.width() / 4):
+                img = self.full
+            px = r.width() / img.width()             # screen px per image px
+            # only scale the visible part (the full image can be 16k px wide)
+            vis = r.intersected(QtCore.QRectF(self.rect()))
+            if not vis.isEmpty():
+                src = QtCore.QRectF((vis.x() - r.x()) / px, (vis.y() - r.y()) / px,
+                                    vis.width() / px, vis.height() / px)
+                # crisp pixels when zoomed right in, smooth otherwise
+                p.setRenderHint(QtGui.QPainter.SmoothPixmapTransform, px < 4)
+                p.drawImage(vis, img, src)
         else:
             p.setPen(QtGui.QColor(150, 155, 165))
-            p.drawText(r, QtCore.Qt.AlignCenter, self.message)
+            p.drawText(self._fit_rect(), QtCore.Qt.AlignCenter, self.message)
         p.setPen(QtGui.QPen(QtGui.QColor(235, 70, 70), 1, QtCore.Qt.DashLine))
         p.drawRect(r)
+        if self.zoom > 1.0:
+            txt = f'{self.zoom * 100:.0f}%  ·  double-click to fit'
+            fm = p.fontMetrics()
+            box = QtCore.QRectF(6, self.height() - fm.height() - 10, fm.horizontalAdvance(txt) + 12,
+                                fm.height() + 4)
+            p.fillRect(box, QtGui.QColor(0, 0, 0, 160))
+            p.setPen(QtGui.QColor(220, 222, 228))
+            p.drawText(box, QtCore.Qt.AlignCenter, txt)
         p.end()
 
 
@@ -423,6 +539,7 @@ class MeshRenderDialog(QtWidgets.QDialog):
 
         self.raster = SceneRasteriser(self.scene, s['resolution'], self.base_color)
         self.preview.image = self.raster.preview
+        self.preview.full = self.raster.image
         self.progress.setRange(0, max(1, self.raster.total))
         self.progress.setValue(0)
         self.stale = False
