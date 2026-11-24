@@ -17,6 +17,9 @@ def tile_transform(size: int) -> QtGui.QTransform:
 RENDER_BATCH = 50
 LINE_COST = 0.05      # progress weight of one line segment, relative to a triangle
 
+PAINT_LINE_PX = 3.0   # mesh render contour line width, image pixels
+PAINT_POINT_PX = 5.0  # mesh render contour point dot diameter, image pixels
+
 
 def render_tiledata(td, size: int, draw_lines=True, progress=None) -> QtGui.QImage:
     """progress(fraction) is called between batches; it may raise to abort the render."""
@@ -110,14 +113,16 @@ class SceneRasteriser:
         self.index = end
         self.last_batch = (start, end)
 
-    def paint_lines(self, polylines, color, width_px):
-        """Burn contour polylines into both images (the old magenta / blue overlay)."""
-        for img, tr, scale in ((self.image, self._t_full, 1.0),
-                               (self.preview, self._t_prev, self.preview.width() / self.size)):
+    def paint_lines(self, polylines, color):
+        """
+        Burn contour polylines into both images (the old magenta / blue overlay).
+        Lines and dots are a fixed pixel size, whatever the image resolution.
+        """
+        for img, tr in ((self.image, self._t_full), (self.preview, self._t_prev)):
             p = QtGui.QPainter(img)
             p.setRenderHint(QtGui.QPainter.Antialiasing, True)
             p.setTransform(tr)
-            pen = QtGui.QPen(QtGui.QColor(*color), max(1.0, width_px * scale))
+            pen = QtGui.QPen(QtGui.QColor(*color), PAINT_LINE_PX)
             pen.setCosmetic(True)
             pen.setCapStyle(QtCore.Qt.RoundCap)
             pen.setJoinStyle(QtCore.Qt.RoundJoin)
@@ -127,7 +132,7 @@ class SceneRasteriser:
             # green dot on every point of every line (each segment's start and end),
             # to help line things up
             p.resetTransform()
-            r = max(1.5, width_px * scale * 1.5)
+            r = PAINT_POINT_PX / 2
             p.setPen(QtCore.Qt.NoPen)
             p.setBrush(QtGui.QColor(0, 255, 0))
             for poly in polylines:

@@ -586,10 +586,9 @@ class MeshRenderDialog(QtWidgets.QDialog):
     def _finish(self):
         self.timer.stop()
         self.skip_btn.setEnabled(False)
-        width = max(2.0, self.raster.size / 2000)
         for key, k, polys in self.paint_sets:
             colors = PAINT_COLORS[key]
-            self.raster.paint_lines(polys, colors[k % len(colors)], width)
+            self.raster.paint_lines(polys, colors[k % len(colors)])
         self.result_image = self.raster.image
         self.preview.update()
         self.place_btn.setEnabled(not self.stale)
