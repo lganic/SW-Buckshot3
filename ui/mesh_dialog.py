@@ -9,7 +9,7 @@ import time
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core.constants import PRESETS, NUM_CHANNELS
+from ..core.constants import PRESETS, GROUND, GROUND_GROUP, GROUND_PRESETS, NUM_CHANNELS
 from ..core.contours import extract_contours
 from ..core.meshfile import MeshPlacement, build_scene
 from ..core.tile_render import SceneRasteriser
@@ -28,6 +28,10 @@ LINE_GROUPS = [
 ]
 PAINT_COLORS = {'shore': [(0, 0, 255)], 'height': [(255, 0, 0), (255, 0, 255)],
                 'under': [(255, 0, 0), (255, 0, 255)]}
+
+# Ground placements first (the terrain usually goes in before the buildings), then buildings.
+ALL_PRESETS = {**GROUND_PRESETS, **PRESETS}
+PRESET_NOTES = {f'{GROUND_GROUP}: {tile}': f'Ground mesh: {mesh}' for tile, (mesh, _p, _y) in GROUND.items()}
 
 
 def default_settings():
@@ -222,8 +226,8 @@ class MeshRenderDialog(QtWidgets.QDialog):
         add = QtWidgets.QPushButton('Add mesh…')
         add.clicked.connect(self._add_meshes)
         self.preset_btn = QtWidgets.QPushButton('Apply placement preset…')
-        self.preset_btn.setToolTip('Search the known building / runway placements and apply one '
-                                   'to the selected mesh row(s)')
+        self.preset_btn.setToolTip('Search the known ground (terrain) and building / runway placements '
+                                   'and apply one to the selected mesh row(s)')
         self.preset_btn.clicked.connect(self._open_presets)
         self.preset_picker = None   # built on first use, then kept so the last search is remembered
         rem = QtWidgets.QPushButton('Remove')
@@ -406,7 +410,7 @@ class MeshRenderDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(self, 'Preset', 'Select the mesh row(s) to apply the preset to first.')
             return
         if self.preset_picker is None:
-            self.preset_picker = PresetPicker(PRESETS, self)
+            self.preset_picker = PresetPicker(ALL_PRESETS, self, PRESET_NOTES)
             self.preset_picker.picked.connect(self._apply_preset)
         self.preset_picker.popup(self.preset_btn)
 
@@ -415,11 +419,13 @@ class MeshRenderDialog(QtWidgets.QDialog):
         if not rows:
             QtWidgets.QMessageBox.information(self, 'Preset', 'Select the mesh row(s) to apply the preset to first.')
             return
-        (x, y, z), yaw = PRESETS[name]
+        (x, y, z), yaw = ALL_PRESETS[name]
+        # ground meshes make the shore / height lines; buildings shouldn't
+        contours = QtCore.Qt.Checked if name in GROUND_PRESETS else QtCore.Qt.Unchecked
         for r in rows:
             for c, v in enumerate((x, y, z, yaw), start=1):
                 self.table.item(r, c).setText(f'{v:g}')
-            self.table.item(r, 5).setCheckState(QtCore.Qt.Unchecked)
+            self.table.item(r, 5).setCheckState(contours)
 
     def placements(self):
         out = []

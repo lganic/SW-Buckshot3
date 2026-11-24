@@ -571,173 +571,187 @@ PRESETS = {
 }
 
 
-# Ground (terrain) mesh placement per tile. The tile's island/ground mesh and its ground physics
-# mesh carry their own transform, and building pivots above are in tile space AFTER that offset.
-# E.g. island12: island_12.mesh is drawn 6.485 m below 0. Draw the ground mesh with
-#   rotate_point(p_mesh, *ground_offset(tile))
-# Tiles not listed here place their ground mesh at the origin with no rotation.
+# Ground (terrain) mesh placement per tile: tile -> (mesh file, (x, height, z), yaw degrees).
+# A tile's island / ground mesh carries its own transform; the building pivots in PRESETS are
+# in tile space, so the ground mesh has to be placed with this offset for them to line up.
+# E.g. island12: island_12.mesh sits 6.485 m below 0. Same maths as PRESETS / MeshPlacement:
+# yaw about +Y, then translate. Tiles not listed place their ground mesh at the origin with
+# no rotation (see ground_offset).
 # Multi-tile islands (arctic_tile_*, island_33_tile_*, island_42_volcano_tile_*) share one big
 # mesh, shifted by whole kilometres into each tile's space.
 GROUND = {
-    'arctic_island_playerbase': ((2000.0, 0.0, -1000.0), 0.0),  # meshes/arctic_island_playerbase.mesh
-    'arctic_island_survey': ((0.0, 2.514308, 0.0), 0.0),  # meshes/arctic_island_survey.mesh
-    'arctic_tile_11': ((1000.0, 0.0, -1000.0), 0.0),  # meshes/arctic_tile_11.mesh
-    'arctic_tile_12_oilrig': ((0.0, 0.0, -1000.0), 0.0),  # meshes/arctic_tile_12.mesh
-    'arctic_tile_13': ((-1000.0, 0.0, -1000.0), 0.0),  # meshes/arctic_tile_13.mesh
-    'arctic_tile_21': ((1000.0, 0.0, 0.0), 0.0),  # meshes/arctic_tile_21.mesh
-    'arctic_tile_23': ((-1000.0, 0.0, 0.0), 0.0),  # meshes/arctic_tile_23.mesh
-    'arctic_tile_31': ((1000.0, 0.0, 1000.0), 0.0),  # meshes/arctic_tile_31.mesh
-    'arctic_tile_32': ((0.0, 0.0, 1000.0), 0.0),  # meshes/arctic_tile_32.mesh
-    'arctic_tile_33': ((-1000.0, 0.0, 1000.0), 0.0),  # meshes/arctic_tile_33.mesh
-    'arid_04': ((-8.875051, 5.141699, -3.448028), 0.0),  # meshes/arid_mainland_assets/arid_islands/arid_island_04.mesh
-    'arid_13': ((0.0, 4.358292, 0.0), 0.0),  # meshes/arid_mainland_assets/arid_islands/arid_island_13.mesh
-    'ice_shelf_01': ((15.911325, 1.196686, -14.13931), 0.0),  # meshes/arctic_ice_shelf_01.mesh
-    'ice_shelf_01_rot_0': ((15.911325, 1.196686, -14.13931), 0.0),  # meshes/arctic_ice_shelf_01.mesh
-    'ice_shelf_01_rot_1': ((-14.139311, 1.196686, -15.911324), 90.0),  # meshes/arctic_ice_shelf_01.mesh
-    'ice_shelf_01_rot_2': ((-15.911324, 1.196686, 14.139311), 180.0),  # meshes/arctic_ice_shelf_01.mesh
-    'ice_shelf_01_rot_3': ((14.13931, 1.196686, 15.911325), -90.0),  # meshes/arctic_ice_shelf_01.mesh
-    'ice_shelf_02': ((-2.748169, -13.215759, 0.0), 0.0),  # meshes/arctic_ice_shelf_02.mesh
-    'ice_shelf_02_rot_0': ((-2.748169, -13.215759, 0.0), 0.0),  # meshes/arctic_ice_shelf_02.mesh
-    'ice_shelf_02_rot_1': ((0.0, -13.215759, 2.748169), 90.0),  # meshes/arctic_ice_shelf_02.mesh
-    'ice_shelf_02_rot_2': ((2.748169, -13.215759, 0.0), 180.0),  # meshes/arctic_ice_shelf_02.mesh
-    'ice_shelf_02_rot_3': ((0.0, -13.215759, -2.748169), -90.0),  # meshes/arctic_ice_shelf_02.mesh
-    'ice_shelf_03': ((-42.583279, -7.157207, 0.736198), 0.0),  # meshes/arctic_ice_shelf_03.mesh
-    'ice_shelf_03_rot_0': ((-42.583279, -7.157207, 0.736198), 0.0),  # meshes/arctic_ice_shelf_03.mesh
-    'ice_shelf_03_rot_1': ((0.7362, -7.157207, 42.583279), 90.0),  # meshes/arctic_ice_shelf_03.mesh
-    'ice_shelf_03_rot_2': ((42.583279, -7.157207, -0.736202), 180.0),  # meshes/arctic_ice_shelf_03.mesh
-    'ice_shelf_03_rot_3': ((-0.736199, -7.157207, -42.583279), -90.0),  # meshes/arctic_ice_shelf_03.mesh
-    'ice_shelf_04': ((73.958954, -1.373002, 23.819778), 0.0),  # meshes/arctic_ice_shelf_04.mesh
-    'ice_shelf_04_rot_0': ((73.958954, -1.373002, 23.819778), 0.0),  # meshes/arctic_ice_shelf_04.mesh
-    'ice_shelf_04_rot_1': ((23.819775, -1.373002, -73.958955), 90.0),  # meshes/arctic_ice_shelf_04.mesh
-    'ice_shelf_04_rot_2': ((-73.958956, -1.373002, -23.819772), 180.0),  # meshes/arctic_ice_shelf_04.mesh
-    'ice_shelf_04_rot_3': ((-23.819777, -1.373002, 73.958954), -90.0),  # meshes/arctic_ice_shelf_04.mesh
-    'ice_shelf_05': ((-12.185305, -3.712941, -9.096939), 0.0),  # meshes/arctic_ice_shelf_05.mesh
-    'ice_shelf_05_rot_0': ((-12.185305, -3.712941, -9.096939), 0.0),  # meshes/arctic_ice_shelf_05.mesh
-    'ice_shelf_05_rot_1': ((-9.096938, -3.712941, 12.185305), 90.0),  # meshes/arctic_ice_shelf_05.mesh
-    'ice_shelf_05_rot_2': ((12.185306, -3.712941, 9.096938), 180.0),  # meshes/arctic_ice_shelf_05.mesh
-    'ice_shelf_05_rot_3': ((9.096939, -3.712941, -12.185305), -90.0),  # meshes/arctic_ice_shelf_05.mesh
-    'ice_shelf_06': ((0.0, 98.502502, 0.0), 0.0),  # meshes/arctic_ice_shelf_06.mesh
-    'ice_shelf_06_rot_0': ((0.0, 98.502502, 0.0), 0.0),  # meshes/arctic_ice_shelf_06.mesh
-    'ice_shelf_06_rot_1': ((0.0, 98.502502, 0.0), 90.0),  # meshes/arctic_ice_shelf_06.mesh
-    'ice_shelf_06_rot_2': ((0.0, 98.502502, 0.0), 180.0),  # meshes/arctic_ice_shelf_06.mesh
-    'ice_shelf_06_rot_3': ((0.0, 98.502502, 0.0), -90.0),  # meshes/arctic_ice_shelf_06.mesh
-    'ice_shelf_07': ((0.0, -9.76825, 0.0), 0.0),  # meshes/arctic_ice_shelf_07.mesh
-    'ice_shelf_07_rot_0': ((0.0, -9.76825, 0.0), 0.0),  # meshes/arctic_ice_shelf_07.mesh
-    'ice_shelf_07_rot_1': ((0.0, -9.76825, 0.0), 90.0),  # meshes/arctic_ice_shelf_07.mesh
-    'ice_shelf_07_rot_2': ((0.0, -9.76825, 0.0), 180.0),  # meshes/arctic_ice_shelf_07.mesh
-    'ice_shelf_07_rot_3': ((0.0, -9.76825, 0.0), -90.0),  # meshes/arctic_ice_shelf_07.mesh
-    'ice_shelf_08': ((0.0, 42.578094, 0.0), 0.0),  # meshes/arctic_ice_shelf_08.mesh
-    'ice_shelf_08_rot_0': ((0.0, 42.578094, 0.0), 0.0),  # meshes/arctic_ice_shelf_08.mesh
-    'ice_shelf_08_rot_1': ((0.0, 42.578094, 0.0), 90.0),  # meshes/arctic_ice_shelf_08.mesh
-    'ice_shelf_08_rot_2': ((0.0, 42.578094, 0.0), 180.0),  # meshes/arctic_ice_shelf_08.mesh
-    'ice_shelf_08_rot_3': ((0.0, 42.578094, 0.0), -90.0),  # meshes/arctic_ice_shelf_08.mesh
-    'ice_shelf_09': ((0.0, -3.654663, 0.0), 0.0),  # meshes/arctic_ice_shelf_09.mesh
-    'ice_shelf_09_rot_0': ((0.0, -3.654663, 0.0), 0.0),  # meshes/arctic_ice_shelf_09.mesh
-    'ice_shelf_09_rot_1': ((0.0, -3.654663, 0.0), 90.0),  # meshes/arctic_ice_shelf_09.mesh
-    'ice_shelf_09_rot_2': ((0.0, -3.654663, 0.0), 180.0),  # meshes/arctic_ice_shelf_09.mesh
-    'ice_shelf_09_rot_3': ((0.0, -3.654663, 0.0), -90.0),  # meshes/arctic_ice_shelf_09.mesh
-    'ice_shelf_10': ((-43.083244, -2.272047, -43.206367), 0.0),  # meshes/arctic_ice_shelf_10.mesh
-    'ice_shelf_10_rot_0': ((-43.083244, -2.272047, -43.206367), 0.0),  # meshes/arctic_ice_shelf_10.mesh
-    'ice_shelf_10_rot_1': ((-43.206365, -2.272047, 43.083246), 90.0),  # meshes/arctic_ice_shelf_10.mesh
-    'ice_shelf_10_rot_2': ((43.083248, -2.272047, 43.206363), 180.0),  # meshes/arctic_ice_shelf_10.mesh
-    'ice_shelf_10_rot_3': ((43.206366, -2.272047, -43.083245), -90.0),  # meshes/arctic_ice_shelf_10.mesh
-    'ice_shelf_11': ((0.0, 54.092712, 0.0), 0.0),  # meshes/arctic_ice_shelf_11.mesh
-    'ice_shelf_11_rot_0': ((0.0, 54.092712, 0.0), 0.0),  # meshes/arctic_ice_shelf_11.mesh
-    'ice_shelf_11_rot_1': ((0.0, 54.092712, 0.0), 90.0),  # meshes/arctic_ice_shelf_11.mesh
-    'ice_shelf_11_rot_2': ((0.0, 54.092712, 0.0), 180.0),  # meshes/arctic_ice_shelf_11.mesh
-    'ice_shelf_11_rot_3': ((0.0, 54.092712, 0.0), -90.0),  # meshes/arctic_ice_shelf_11.mesh
-    'ice_shelf_12': ((0.0, 47.152893, 0.0), 0.0),  # meshes/arctic_ice_shelf_12.mesh
-    'ice_shelf_12_rot_0': ((0.0, 47.152893, 0.0), 0.0),  # meshes/arctic_ice_shelf_12.mesh
-    'ice_shelf_12_rot_1': ((0.0, 47.152893, 0.0), 90.0),  # meshes/arctic_ice_shelf_12.mesh
-    'ice_shelf_12_rot_2': ((0.0, 47.152893, 0.0), 180.0),  # meshes/arctic_ice_shelf_12.mesh
-    'ice_shelf_12_rot_3': ((0.0, 47.152893, 0.0), -90.0),  # meshes/arctic_ice_shelf_12.mesh
-    'island11': ((0.0, -1.766724, 0.0), 0.0),  # meshes/island_11.mesh
-    'island12': ((0.0, -6.485474, 0.0), 0.0),  # meshes/island_12.mesh
-    'island_13': ((0.0, -5.716156, 0.0), 0.0),  # meshes/island_13.mesh
-    'island_14': ((0.0, -4.292084, 0.0), 0.0),  # meshes/island_14.mesh
-    'island_15': ((-228.539993, -5.2, -65.550003), 0.0),  # meshes/island_15.mesh
-    'island_17': ((0.0, -2.13, 0.0), 0.0),  # meshes/island_17.mesh
-    'island_18': ((0.0, -2.628662, 0.0), 0.0),  # meshes/island_18.mesh
-    'island_2': ((0.0, -10.0, -30.0), 0.0),  # meshes/island_02.mesh
-    'island_22': ((0.0, -1.285553, 0.0), 0.0),  # meshes/island_22.mesh
-    'island_23': ((0.0, -0.717804, 0.0), 0.0),  # meshes/island_23.mesh
-    'island_24': ((0.0, -3.149536, 0.0), 0.0),  # meshes/island_24.mesh
-    'island_25': ((0.0, -7.765717, 0.0), 0.0),  # meshes/island_25.mesh
-    'island_26_fishing': ((0.0, -1.90271, 0.0), 0.0),  # meshes/island_26_fishing.mesh
-    'island_28_windfarm': ((-25.723804, 0.0, -17.995771), 0.0),  # meshes/island_28_windfarm.mesh
-    'island_3': ((0.0, -11.0, 0.0), 0.0),  # meshes/island_03.mesh
-    'island_33_tile_03': ((-1000.0, 0.0, -2000.0), 0.0),  # meshes/island_33_tile_03.mesh
-    'island_33_tile_04': ((-2000.0, 0.0, -2000.0), 0.0),  # meshes/island_33_tile_04.mesh
-    'island_33_tile_05': ((-3000.0, 0.0, -2000.0), 0.0),  # meshes/island_33_tile_05.mesh
-    'island_33_tile_06': ((-4000.0, 0.0, -2000.0), 0.0),  # meshes/island_33_tile_06.mesh
-    'island_33_tile_07': ((-5000.0, 0.0, -2000.0), 0.0),  # meshes/island_33_tile_07.mesh
-    'island_33_tile_08': ((-6000.0, 0.0, -2000.0), 0.0),  # meshes/island_33_tile_08.mesh
-    'island_33_tile_09': ((-7000.0, 0.0, -2000.0), 0.0),  # meshes/island_33_tile_09.mesh
-    'island_33_tile_11': ((1000.0, 0.0, -1000.0), 0.0),  # meshes/island_33_tile_11.mesh
-    'island_33_tile_12': ((0.0, 0.0, -1000.0), 0.0),  # meshes/island_33_tile_12.mesh
-    'island_33_tile_13': ((-1000.0, 0.0, -1000.0), 0.0),  # meshes/island_33_tile_13.mesh
-    'island_33_tile_21': ((1000.0, 0.0, 0.0), 0.0),  # meshes/island_33_tile_21.mesh
-    'island_33_tile_23': ((-1000.0, 0.0, 0.0), 0.0),  # meshes/island_33_tile_23.mesh
-    'island_33_tile_31': ((1000.0, 0.0, 1000.0), 0.0),  # meshes/island_33_tile_31.mesh
-    'island_33_tile_32': ((0.0, 0.0, 1000.0), 0.0),  # meshes/island_33_tile_32.mesh
-    'island_33_tile_33': ((-1000.0, 0.0, 1000.0), 0.0),  # meshes/island_33_tile_33.mesh
-    'island_33_tile_end': ((-7000.0, 0.0, -1000.0), 0.0),  # meshes/island_33_tile_end.mesh
-    'island_33_tile_end_1': ((-8000.0, 0.0, -1000.0), 0.0),  # meshes/island_33_tile_end_1.mesh
-    'island_33_tile_end_2': ((-8000.0, 0.0, 0.0), 0.0),  # meshes/island_33_tile_end_2.mesh
-    'island_34_military': ((-17.326813, 0.294007, -20.327866), 0.0),  # meshes/island_34_military.mesh
-    'island_35_seafort': ((-34.094116, 0.240053, -8.562216), 0.0),  # meshes/island_35.mesh
-    'island_36_oil_refinery': ((0.0, -1.638, 0.0), 0.0),  # meshes/island_36_oil_refinery.mesh
-    'island_38_lighthouse': ((0.0, 3.016907, 0.0), 0.0),  # meshes/island_38_lighthouse.mesh
-    'island_4': ((-21.725525, 8.608276, 93.378479), 0.0),  # meshes/island_04.mesh
-    'island_41_underwater_mining': ((0.0, -2.511261, 0.0), 0.0),  # meshes/island_41_underwater_mining.mesh
-    'island_42_volcano_tile_11': ((1000.0, 0.0, -1000.0), 0.0),  # meshes/island_42_volcano_tile_11.mesh
-    'island_42_volcano_tile_12': ((0.0, 0.0, -1000.0), 0.0),  # meshes/island_42_volcano_tile_12.mesh
-    'island_42_volcano_tile_13': ((-1000.0, 0.0, -1000.0), 0.0),  # meshes/island_42_volcano_tile_13.mesh
-    'island_42_volcano_tile_21': ((1000.0, 0.0, 0.0), 0.0),  # meshes/island_42_volcano_tile_21.mesh
-    'island_42_volcano_tile_23': ((-1000.0, 0.0, 0.0), 0.0),  # meshes/island_42_volcano_tile_23.mesh
-    'island_42_volcano_tile_31': ((1000.0, 0.0, 1000.0), 0.0),  # meshes/island_42_volcano_tile_31.mesh
-    'island_42_volcano_tile_32': ((0.0, 0.0, 1000.0), 0.0),  # meshes/island_42_volcano_tile_32.mesh
-    'island_42_volcano_tile_33': ((-1000.0, 0.0, 1000.0), 0.0),  # meshes/island_42_volcano_tile_33.mesh
-    'oil_rig': ((-0.477882, -1.221771, -0.79731), 0.0),  # meshes/oil_rig.mesh
-    'oil_rig_medium': ((1.133554, -90.041168, 8.35338), 0.0),  # meshes/seabed_subsea_system_core.mesh
-    'oil_rig_playerbase': ((0.0, -10.480804, 0.0), 0.0),  # meshes/oil_rig_playerbase.mesh
-    'seabed_cave_system': ((0.0, -76.173004, 0.0), 0.0),  # meshes/seabed_cave_system.mesh
-    'seabed_island': ((0.0, -82.800842, 0.0), 90.0),  # meshes/seabed_island.mesh
-    'seabed_island_14': ((0.0, -88.412201, 0.0), 90.0),  # meshes/seabed_island_14.mesh
-    'seabed_island_19': ((0.0, -80.855347, 0.0), -90.0),  # meshes/seabed_island_19.mesh
-    'seabed_island_20': ((0.0, -84.076416, 0.0), 180.0),  # meshes/seabed_island_20.mesh
-    'seabed_island_21': ((0.0, -76.510132, 0.0), 90.0),  # meshes/seabed_island_21.mesh
-    'seabed_island_22': ((0.0, -84.959747, 0.0), 90.0),  # meshes/seabed_island_22.mesh
-    'seabed_island_23': ((0.0, -85.705322, 0.0), 180.0),  # meshes/seabed_island_23.mesh
-    'seabed_island_38': ((0.0, -74.647522, 0.0), -90.0),  # meshes/seabed_island_38.mesh
-    'seabed_shipwreck': ((0.0, -82.667358, 0.0), 0.0),  # meshes/seabed_shipwreck.mesh
-    'seabed_shipwreck_02': ((0.0, -83.115601, 0.0), 0.0),  # meshes/seabed_shipwreck_02.mesh
-    'track_curve_left_diagonal_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_curve_left_diagonal.mesh
-    'track_curve_left_diagonal_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_curve_left_diagonal.mesh
-    'track_curve_left_diagonal_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_curve_left_diagonal.mesh
-    'track_curve_right_diagonal_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_curve_right_diagonal.mesh
-    'track_curve_right_diagonal_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_curve_right_diagonal.mesh
-    'track_curve_right_diagonal_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_curve_right_diagonal.mesh
-    'track_curve_right_diagonal_variant_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_curve_right_diagonal_variant.mesh
-    'track_curve_right_diagonal_variant_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_curve_right_diagonal_variant.mesh
-    'track_curve_right_diagonal_variant_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_curve_right_diagonal_variant.mesh
-    'track_diagonal_left_fork_straight_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_diagonal_left_fork_straight.mesh
-    'track_diagonal_left_fork_straight_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_diagonal_left_fork_straight.mesh
-    'track_diagonal_left_fork_straight_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_diagonal_left_fork_straight.mesh
-    'track_diagonal_right_fork_straight_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_diagonal_right_fork_straight.mesh
-    'track_diagonal_right_fork_straight_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_diagonal_right_fork_straight.mesh
-    'track_diagonal_right_fork_straight_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_diagonal_right_fork_straight.mesh
-    'track_diagonal_variant_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_diagonal_variant.mesh
-    'track_diagonal_variant_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_diagonal_variant.mesh
-    'track_diagonal_variant_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_diagonal_variant.mesh
-    'track_straight_fork_left_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_straight_fork_left.mesh
-    'track_straight_fork_left_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_straight_fork_left.mesh
-    'track_straight_fork_left_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_straight_fork_left.mesh
-    'track_straight_fork_right_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_straight_fork_right.mesh
-    'track_straight_fork_right_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_straight_fork_right.mesh
-    'track_straight_fork_right_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_straight_fork_right.mesh
-    'track_straight_variant_rot_1': ((0.0, 0.0, 0.0), 90.0),  # meshes/track_pieces/track_straight_variant.mesh
-    'track_straight_variant_rot_2': ((0.0, 0.0, 0.0), 180.0),  # meshes/track_pieces/track_straight_variant.mesh
-    'track_straight_variant_rot_3': ((0.0, 0.0, 0.0), -90.0),  # meshes/track_pieces/track_straight_variant.mesh
-    'wind_turbine': ((-1.168854, 20.350372, 0.0), 0.0),  # meshes/wind_turbine.mesh
+    'arctic_island_playerbase': ('meshes/arctic_island_playerbase.mesh', (2000.0, 0.0, -1000.0), 0.0),
+    'arctic_island_survey': ('meshes/arctic_island_survey.mesh', (0.0, 2.514308, 0.0), 0.0),
+    'arctic_tile_11': ('meshes/arctic_tile_11.mesh', (1000.0, 0.0, -1000.0), 0.0),
+    'arctic_tile_12_oilrig': ('meshes/arctic_tile_12.mesh', (0.0, 0.0, -1000.0), 0.0),
+    'arctic_tile_13': ('meshes/arctic_tile_13.mesh', (-1000.0, 0.0, -1000.0), 0.0),
+    'arctic_tile_21': ('meshes/arctic_tile_21.mesh', (1000.0, 0.0, 0.0), 0.0),
+    'arctic_tile_23': ('meshes/arctic_tile_23.mesh', (-1000.0, 0.0, 0.0), 0.0),
+    'arctic_tile_31': ('meshes/arctic_tile_31.mesh', (1000.0, 0.0, 1000.0), 0.0),
+    'arctic_tile_32': ('meshes/arctic_tile_32.mesh', (0.0, 0.0, 1000.0), 0.0),
+    'arctic_tile_33': ('meshes/arctic_tile_33.mesh', (-1000.0, 0.0, 1000.0), 0.0),
+    'arid_04': ('meshes/arid_mainland_assets/arid_islands/arid_island_04.mesh', (-8.875051, 5.141699, -3.448028), 0.0),
+    'arid_13': ('meshes/arid_mainland_assets/arid_islands/arid_island_13.mesh', (0.0, 4.358292, 0.0), 0.0),
+    'ice_shelf_01': ('meshes/arctic_ice_shelf_01.mesh', (15.911325, 1.196686, -14.13931), 0.0),
+    'ice_shelf_01_rot_0': ('meshes/arctic_ice_shelf_01.mesh', (15.911325, 1.196686, -14.13931), 0.0),
+    'ice_shelf_01_rot_1': ('meshes/arctic_ice_shelf_01.mesh', (-14.139311, 1.196686, -15.911324), 90.0),
+    'ice_shelf_01_rot_2': ('meshes/arctic_ice_shelf_01.mesh', (-15.911324, 1.196686, 14.139311), 180.0),
+    'ice_shelf_01_rot_3': ('meshes/arctic_ice_shelf_01.mesh', (14.13931, 1.196686, 15.911325), -90.0),
+    'ice_shelf_02': ('meshes/arctic_ice_shelf_02.mesh', (-2.748169, -13.215759, 0.0), 0.0),
+    'ice_shelf_02_rot_0': ('meshes/arctic_ice_shelf_02.mesh', (-2.748169, -13.215759, 0.0), 0.0),
+    'ice_shelf_02_rot_1': ('meshes/arctic_ice_shelf_02.mesh', (0.0, -13.215759, 2.748169), 90.0),
+    'ice_shelf_02_rot_2': ('meshes/arctic_ice_shelf_02.mesh', (2.748169, -13.215759, 0.0), 180.0),
+    'ice_shelf_02_rot_3': ('meshes/arctic_ice_shelf_02.mesh', (0.0, -13.215759, -2.748169), -90.0),
+    'ice_shelf_03': ('meshes/arctic_ice_shelf_03.mesh', (-42.583279, -7.157207, 0.736198), 0.0),
+    'ice_shelf_03_rot_0': ('meshes/arctic_ice_shelf_03.mesh', (-42.583279, -7.157207, 0.736198), 0.0),
+    'ice_shelf_03_rot_1': ('meshes/arctic_ice_shelf_03.mesh', (0.7362, -7.157207, 42.583279), 90.0),
+    'ice_shelf_03_rot_2': ('meshes/arctic_ice_shelf_03.mesh', (42.583279, -7.157207, -0.736202), 180.0),
+    'ice_shelf_03_rot_3': ('meshes/arctic_ice_shelf_03.mesh', (-0.736199, -7.157207, -42.583279), -90.0),
+    'ice_shelf_04': ('meshes/arctic_ice_shelf_04.mesh', (73.958954, -1.373002, 23.819778), 0.0),
+    'ice_shelf_04_rot_0': ('meshes/arctic_ice_shelf_04.mesh', (73.958954, -1.373002, 23.819778), 0.0),
+    'ice_shelf_04_rot_1': ('meshes/arctic_ice_shelf_04.mesh', (23.819775, -1.373002, -73.958955), 90.0),
+    'ice_shelf_04_rot_2': ('meshes/arctic_ice_shelf_04.mesh', (-73.958956, -1.373002, -23.819772), 180.0),
+    'ice_shelf_04_rot_3': ('meshes/arctic_ice_shelf_04.mesh', (-23.819777, -1.373002, 73.958954), -90.0),
+    'ice_shelf_05': ('meshes/arctic_ice_shelf_05.mesh', (-12.185305, -3.712941, -9.096939), 0.0),
+    'ice_shelf_05_rot_0': ('meshes/arctic_ice_shelf_05.mesh', (-12.185305, -3.712941, -9.096939), 0.0),
+    'ice_shelf_05_rot_1': ('meshes/arctic_ice_shelf_05.mesh', (-9.096938, -3.712941, 12.185305), 90.0),
+    'ice_shelf_05_rot_2': ('meshes/arctic_ice_shelf_05.mesh', (12.185306, -3.712941, 9.096938), 180.0),
+    'ice_shelf_05_rot_3': ('meshes/arctic_ice_shelf_05.mesh', (9.096939, -3.712941, -12.185305), -90.0),
+    'ice_shelf_06': ('meshes/arctic_ice_shelf_06.mesh', (0.0, 98.502502, 0.0), 0.0),
+    'ice_shelf_06_rot_0': ('meshes/arctic_ice_shelf_06.mesh', (0.0, 98.502502, 0.0), 0.0),
+    'ice_shelf_06_rot_1': ('meshes/arctic_ice_shelf_06.mesh', (0.0, 98.502502, 0.0), 90.0),
+    'ice_shelf_06_rot_2': ('meshes/arctic_ice_shelf_06.mesh', (0.0, 98.502502, 0.0), 180.0),
+    'ice_shelf_06_rot_3': ('meshes/arctic_ice_shelf_06.mesh', (0.0, 98.502502, 0.0), -90.0),
+    'ice_shelf_07': ('meshes/arctic_ice_shelf_07.mesh', (0.0, -9.76825, 0.0), 0.0),
+    'ice_shelf_07_rot_0': ('meshes/arctic_ice_shelf_07.mesh', (0.0, -9.76825, 0.0), 0.0),
+    'ice_shelf_07_rot_1': ('meshes/arctic_ice_shelf_07.mesh', (0.0, -9.76825, 0.0), 90.0),
+    'ice_shelf_07_rot_2': ('meshes/arctic_ice_shelf_07.mesh', (0.0, -9.76825, 0.0), 180.0),
+    'ice_shelf_07_rot_3': ('meshes/arctic_ice_shelf_07.mesh', (0.0, -9.76825, 0.0), -90.0),
+    'ice_shelf_08': ('meshes/arctic_ice_shelf_08.mesh', (0.0, 42.578094, 0.0), 0.0),
+    'ice_shelf_08_rot_0': ('meshes/arctic_ice_shelf_08.mesh', (0.0, 42.578094, 0.0), 0.0),
+    'ice_shelf_08_rot_1': ('meshes/arctic_ice_shelf_08.mesh', (0.0, 42.578094, 0.0), 90.0),
+    'ice_shelf_08_rot_2': ('meshes/arctic_ice_shelf_08.mesh', (0.0, 42.578094, 0.0), 180.0),
+    'ice_shelf_08_rot_3': ('meshes/arctic_ice_shelf_08.mesh', (0.0, 42.578094, 0.0), -90.0),
+    'ice_shelf_09': ('meshes/arctic_ice_shelf_09.mesh', (0.0, -3.654663, 0.0), 0.0),
+    'ice_shelf_09_rot_0': ('meshes/arctic_ice_shelf_09.mesh', (0.0, -3.654663, 0.0), 0.0),
+    'ice_shelf_09_rot_1': ('meshes/arctic_ice_shelf_09.mesh', (0.0, -3.654663, 0.0), 90.0),
+    'ice_shelf_09_rot_2': ('meshes/arctic_ice_shelf_09.mesh', (0.0, -3.654663, 0.0), 180.0),
+    'ice_shelf_09_rot_3': ('meshes/arctic_ice_shelf_09.mesh', (0.0, -3.654663, 0.0), -90.0),
+    'ice_shelf_10': ('meshes/arctic_ice_shelf_10.mesh', (-43.083244, -2.272047, -43.206367), 0.0),
+    'ice_shelf_10_rot_0': ('meshes/arctic_ice_shelf_10.mesh', (-43.083244, -2.272047, -43.206367), 0.0),
+    'ice_shelf_10_rot_1': ('meshes/arctic_ice_shelf_10.mesh', (-43.206365, -2.272047, 43.083246), 90.0),
+    'ice_shelf_10_rot_2': ('meshes/arctic_ice_shelf_10.mesh', (43.083248, -2.272047, 43.206363), 180.0),
+    'ice_shelf_10_rot_3': ('meshes/arctic_ice_shelf_10.mesh', (43.206366, -2.272047, -43.083245), -90.0),
+    'ice_shelf_11': ('meshes/arctic_ice_shelf_11.mesh', (0.0, 54.092712, 0.0), 0.0),
+    'ice_shelf_11_rot_0': ('meshes/arctic_ice_shelf_11.mesh', (0.0, 54.092712, 0.0), 0.0),
+    'ice_shelf_11_rot_1': ('meshes/arctic_ice_shelf_11.mesh', (0.0, 54.092712, 0.0), 90.0),
+    'ice_shelf_11_rot_2': ('meshes/arctic_ice_shelf_11.mesh', (0.0, 54.092712, 0.0), 180.0),
+    'ice_shelf_11_rot_3': ('meshes/arctic_ice_shelf_11.mesh', (0.0, 54.092712, 0.0), -90.0),
+    'ice_shelf_12': ('meshes/arctic_ice_shelf_12.mesh', (0.0, 47.152893, 0.0), 0.0),
+    'ice_shelf_12_rot_0': ('meshes/arctic_ice_shelf_12.mesh', (0.0, 47.152893, 0.0), 0.0),
+    'ice_shelf_12_rot_1': ('meshes/arctic_ice_shelf_12.mesh', (0.0, 47.152893, 0.0), 90.0),
+    'ice_shelf_12_rot_2': ('meshes/arctic_ice_shelf_12.mesh', (0.0, 47.152893, 0.0), 180.0),
+    'ice_shelf_12_rot_3': ('meshes/arctic_ice_shelf_12.mesh', (0.0, 47.152893, 0.0), -90.0),
+    'island11': ('meshes/island_11.mesh', (0.0, -1.766724, 0.0), 0.0),
+    'island12': ('meshes/island_12.mesh', (0.0, -6.485474, 0.0), 0.0),
+    'island_13': ('meshes/island_13.mesh', (0.0, -5.716156, 0.0), 0.0),
+    'island_14': ('meshes/island_14.mesh', (0.0, -4.292084, 0.0), 0.0),
+    'island_15': ('meshes/island_15.mesh', (-228.539993, -5.2, -65.550003), 0.0),
+    'island_17': ('meshes/island_17.mesh', (0.0, -2.13, 0.0), 0.0),
+    'island_18': ('meshes/island_18.mesh', (0.0, -2.628662, 0.0), 0.0),
+    'island_2': ('meshes/island_02.mesh', (0.0, -10.0, -30.0), 0.0),
+    'island_22': ('meshes/island_22.mesh', (0.0, -1.285553, 0.0), 0.0),
+    'island_23': ('meshes/island_23.mesh', (0.0, -0.717804, 0.0), 0.0),
+    'island_24': ('meshes/island_24.mesh', (0.0, -3.149536, 0.0), 0.0),
+    'island_25': ('meshes/island_25.mesh', (0.0, -7.765717, 0.0), 0.0),
+    'island_26_fishing': ('meshes/island_26_fishing.mesh', (0.0, -1.90271, 0.0), 0.0),
+    'island_28_windfarm': ('meshes/island_28_windfarm.mesh', (-25.723804, 0.0, -17.995771), 0.0),
+    'island_3': ('meshes/island_03.mesh', (0.0, -11.0, 0.0), 0.0),
+    'island_33_tile_03': ('meshes/island_33_tile_03.mesh', (-1000.0, 0.0, -2000.0), 0.0),
+    'island_33_tile_04': ('meshes/island_33_tile_04.mesh', (-2000.0, 0.0, -2000.0), 0.0),
+    'island_33_tile_05': ('meshes/island_33_tile_05.mesh', (-3000.0, 0.0, -2000.0), 0.0),
+    'island_33_tile_06': ('meshes/island_33_tile_06.mesh', (-4000.0, 0.0, -2000.0), 0.0),
+    'island_33_tile_07': ('meshes/island_33_tile_07.mesh', (-5000.0, 0.0, -2000.0), 0.0),
+    'island_33_tile_08': ('meshes/island_33_tile_08.mesh', (-6000.0, 0.0, -2000.0), 0.0),
+    'island_33_tile_09': ('meshes/island_33_tile_09.mesh', (-7000.0, 0.0, -2000.0), 0.0),
+    'island_33_tile_11': ('meshes/island_33_tile_11.mesh', (1000.0, 0.0, -1000.0), 0.0),
+    'island_33_tile_12': ('meshes/island_33_tile_12.mesh', (0.0, 0.0, -1000.0), 0.0),
+    'island_33_tile_13': ('meshes/island_33_tile_13.mesh', (-1000.0, 0.0, -1000.0), 0.0),
+    'island_33_tile_21': ('meshes/island_33_tile_21.mesh', (1000.0, 0.0, 0.0), 0.0),
+    'island_33_tile_23': ('meshes/island_33_tile_23.mesh', (-1000.0, 0.0, 0.0), 0.0),
+    'island_33_tile_31': ('meshes/island_33_tile_31.mesh', (1000.0, 0.0, 1000.0), 0.0),
+    'island_33_tile_32': ('meshes/island_33_tile_32.mesh', (0.0, 0.0, 1000.0), 0.0),
+    'island_33_tile_33': ('meshes/island_33_tile_33.mesh', (-1000.0, 0.0, 1000.0), 0.0),
+    'island_33_tile_end': ('meshes/island_33_tile_end.mesh', (-7000.0, 0.0, -1000.0), 0.0),
+    'island_33_tile_end_1': ('meshes/island_33_tile_end_1.mesh', (-8000.0, 0.0, -1000.0), 0.0),
+    'island_33_tile_end_2': ('meshes/island_33_tile_end_2.mesh', (-8000.0, 0.0, 0.0), 0.0),
+    'island_34_military': ('meshes/island_34_military.mesh', (-17.326813, 0.294007, -20.327866), 0.0),
+    'island_35_seafort': ('meshes/island_35.mesh', (-34.094116, 0.240053, -8.562216), 0.0),
+    'island_36_oil_refinery': ('meshes/island_36_oil_refinery.mesh', (0.0, -1.638, 0.0), 0.0),
+    'island_38_lighthouse': ('meshes/island_38_lighthouse.mesh', (0.0, 3.016907, 0.0), 0.0),
+    'island_4': ('meshes/island_04.mesh', (-21.725525, 8.608276, 93.378479), 0.0),
+    'island_41_underwater_mining': ('meshes/island_41_underwater_mining.mesh', (0.0, -2.511261, 0.0), 0.0),
+    'island_42_volcano_tile_11': ('meshes/island_42_volcano_tile_11.mesh', (1000.0, 0.0, -1000.0), 0.0),
+    'island_42_volcano_tile_12': ('meshes/island_42_volcano_tile_12.mesh', (0.0, 0.0, -1000.0), 0.0),
+    'island_42_volcano_tile_13': ('meshes/island_42_volcano_tile_13.mesh', (-1000.0, 0.0, -1000.0), 0.0),
+    'island_42_volcano_tile_21': ('meshes/island_42_volcano_tile_21.mesh', (1000.0, 0.0, 0.0), 0.0),
+    'island_42_volcano_tile_23': ('meshes/island_42_volcano_tile_23.mesh', (-1000.0, 0.0, 0.0), 0.0),
+    'island_42_volcano_tile_31': ('meshes/island_42_volcano_tile_31.mesh', (1000.0, 0.0, 1000.0), 0.0),
+    'island_42_volcano_tile_32': ('meshes/island_42_volcano_tile_32.mesh', (0.0, 0.0, 1000.0), 0.0),
+    'island_42_volcano_tile_33': ('meshes/island_42_volcano_tile_33.mesh', (-1000.0, 0.0, 1000.0), 0.0),
+    'oil_rig': ('meshes/oil_rig.mesh', (-0.477882, -1.221771, -0.79731), 0.0),
+    'oil_rig_medium': ('meshes/seabed_subsea_system_core.mesh', (1.133554, -90.041168, 8.35338), 0.0),
+    'oil_rig_playerbase': ('meshes/oil_rig_playerbase.mesh', (0.0, -10.480804, 0.0), 0.0),
+    'seabed_cave_system': ('meshes/seabed_cave_system.mesh', (0.0, -76.173004, 0.0), 0.0),
+    'seabed_island': ('meshes/seabed_island.mesh', (0.0, -82.800842, 0.0), 90.0),
+    'seabed_island_14': ('meshes/seabed_island_14.mesh', (0.0, -88.412201, 0.0), 90.0),
+    'seabed_island_19': ('meshes/seabed_island_19.mesh', (0.0, -80.855347, 0.0), -90.0),
+    'seabed_island_20': ('meshes/seabed_island_20.mesh', (0.0, -84.076416, 0.0), 180.0),
+    'seabed_island_21': ('meshes/seabed_island_21.mesh', (0.0, -76.510132, 0.0), 90.0),
+    'seabed_island_22': ('meshes/seabed_island_22.mesh', (0.0, -84.959747, 0.0), 90.0),
+    'seabed_island_23': ('meshes/seabed_island_23.mesh', (0.0, -85.705322, 0.0), 180.0),
+    'seabed_island_38': ('meshes/seabed_island_38.mesh', (0.0, -74.647522, 0.0), -90.0),
+    'seabed_shipwreck': ('meshes/seabed_shipwreck.mesh', (0.0, -82.667358, 0.0), 0.0),
+    'seabed_shipwreck_02': ('meshes/seabed_shipwreck_02.mesh', (0.0, -83.115601, 0.0), 0.0),
+    'track_curve_left_diagonal_rot_1': ('meshes/track_pieces/track_curve_left_diagonal.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_curve_left_diagonal_rot_2': ('meshes/track_pieces/track_curve_left_diagonal.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_curve_left_diagonal_rot_3': ('meshes/track_pieces/track_curve_left_diagonal.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_curve_right_diagonal_rot_1': ('meshes/track_pieces/track_curve_right_diagonal.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_curve_right_diagonal_rot_2': ('meshes/track_pieces/track_curve_right_diagonal.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_curve_right_diagonal_rot_3': ('meshes/track_pieces/track_curve_right_diagonal.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_curve_right_diagonal_variant_rot_1': ('meshes/track_pieces/track_curve_right_diagonal_variant.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_curve_right_diagonal_variant_rot_2': ('meshes/track_pieces/track_curve_right_diagonal_variant.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_curve_right_diagonal_variant_rot_3': ('meshes/track_pieces/track_curve_right_diagonal_variant.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_diagonal_left_fork_straight_rot_1': ('meshes/track_pieces/track_diagonal_left_fork_straight.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_diagonal_left_fork_straight_rot_2': ('meshes/track_pieces/track_diagonal_left_fork_straight.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_diagonal_left_fork_straight_rot_3': ('meshes/track_pieces/track_diagonal_left_fork_straight.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_diagonal_right_fork_straight_rot_1': ('meshes/track_pieces/track_diagonal_right_fork_straight.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_diagonal_right_fork_straight_rot_2': ('meshes/track_pieces/track_diagonal_right_fork_straight.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_diagonal_right_fork_straight_rot_3': ('meshes/track_pieces/track_diagonal_right_fork_straight.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_diagonal_variant_rot_1': ('meshes/track_pieces/track_diagonal_variant.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_diagonal_variant_rot_2': ('meshes/track_pieces/track_diagonal_variant.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_diagonal_variant_rot_3': ('meshes/track_pieces/track_diagonal_variant.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_straight_fork_left_rot_1': ('meshes/track_pieces/track_straight_fork_left.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_straight_fork_left_rot_2': ('meshes/track_pieces/track_straight_fork_left.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_straight_fork_left_rot_3': ('meshes/track_pieces/track_straight_fork_left.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_straight_fork_right_rot_1': ('meshes/track_pieces/track_straight_fork_right.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_straight_fork_right_rot_2': ('meshes/track_pieces/track_straight_fork_right.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_straight_fork_right_rot_3': ('meshes/track_pieces/track_straight_fork_right.mesh', (0.0, 0.0, 0.0), -90.0),
+    'track_straight_variant_rot_1': ('meshes/track_pieces/track_straight_variant.mesh', (0.0, 0.0, 0.0), 90.0),
+    'track_straight_variant_rot_2': ('meshes/track_pieces/track_straight_variant.mesh', (0.0, 0.0, 0.0), 180.0),
+    'track_straight_variant_rot_3': ('meshes/track_pieces/track_straight_variant.mesh', (0.0, 0.0, 0.0), -90.0),
+    'wind_turbine': ('meshes/wind_turbine.mesh', (-1.168854, 20.350372, 0.0), 0.0),
 }
+
+GROUND_GROUP = 'Ground'
+
+
+def ground_offset(tile):
+    """((x, height, z), yaw) for a tile's ground mesh; the origin with no yaw if unlisted."""
+    entry = GROUND.get(tile)
+    return (entry[1], entry[2]) if entry else ((0.0, 0.0, 0.0), 0.0)
+
+
+# GROUND in the same shape as PRESETS ('<group>: <tile>' -> ((x, height, z), yaw)), so the
+# preset picker and the mesh dialog can offer ground placements alongside the buildings.
+GROUND_PRESETS = {f'{GROUND_GROUP}: {tile}': (pos, yaw) for tile, (_mesh, pos, yaw) in GROUND.items()}

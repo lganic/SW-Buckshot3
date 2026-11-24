@@ -73,8 +73,9 @@ The folder can have any name, so a ZIP extracted as `SW-Buckshot3-main` works th
 
 1. **Import** (Ctrl+I, shown at startup)
    * **Render .mesh files**: add one or more meshes. Each has X / Height / Z offsets, a yaw rotation, and a
-     *Contours* tick box. Known hangar and runway placements for the stock islands are under
-     *Apply placement preset*. You also pick the render resolution and background colour, and
+     *Contours* tick box. Known placements for the stock islands' ground (terrain) meshes and
+     buildings are under *Apply placement preset* (ground presets leave *Contours* ticked, building
+     presets untick it). You also pick the render resolution and background colour, and
      which lines to generate:
      * Shoreline (sea level, channel)
      * Height contours (interval, levels, first channel, one channel per level or all in one)

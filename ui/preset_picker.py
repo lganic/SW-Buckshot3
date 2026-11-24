@@ -19,8 +19,11 @@ class PresetPicker(QtWidgets.QFrame):
 
     picked = QtCore.Signal(str)
 
-    def __init__(self, presets, parent=None):
+    def __init__(self, presets, parent=None, notes=None):
+        """`notes` optionally maps a preset name to extra text (e.g. the mesh file it is
+        for), shown in its tooltip and matched by the search."""
         super().__init__(parent, QtCore.Qt.Popup)
+        notes = notes or {}
         self.setFrameShape(QtWidgets.QFrame.StyledPanel)
         lay = QtWidgets.QVBoxLayout(self)
         lay.setContentsMargins(6, 6, 6, 6)
@@ -58,8 +61,10 @@ class PresetPicker(QtWidgets.QFrame):
                 top.setFlags(QtCore.Qt.ItemIsEnabled)
             leaf = QtWidgets.QTreeWidgetItem(top, [rest])
             leaf.setData(0, NAME_ROLE, name)
-            leaf.setData(0, SEARCH_ROLE, name.lower())
-            leaf.setToolTip(0, f'{name}\nX {x:g}   Height {y:g}   Z {z:g}   Yaw {yaw:g}°')
+            note = notes.get(name, '')
+            leaf.setData(0, SEARCH_ROLE, f'{name} {note}'.lower())
+            leaf.setToolTip(0, f'{name}\nX {x:g}   Height {y:g}   Z {z:g}   Yaw {yaw:g}°'
+                               + (f'\n{note}' if note else ''))
         bold = self.tree.font()
         bold.setBold(True)
         for top in groups.values():
