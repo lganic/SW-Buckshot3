@@ -9,7 +9,7 @@ import time
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..core.constants import PRESETS, GROUND, GROUND_GROUP, GROUND_PRESETS, NUM_CHANNELS
+from ..core.constants import PRESETS, GROUND_PRESETS, NUM_CHANNELS
 from ..core.contours import extract_contours
 from ..core.meshfile import MeshPlacement, build_scene
 from ..core.tile_render import SceneRasteriser
@@ -30,8 +30,39 @@ PAINT_COLORS = {'shore': [(0, 0, 255)], 'height': [(255, 0, 0), (255, 0, 255)],
                 'under': [(255, 0, 0), (255, 0, 255)]}
 
 # Ground placements first (the terrain usually goes in before the buildings), then buildings.
+# Every entry: name -> ((x, height, z), yaw, mesh file relative to rom/).
 ALL_PRESETS = {**GROUND_PRESETS, **PRESETS}
-PRESET_NOTES = {f'{GROUND_GROUP}: {tile}': f'Ground mesh: {mesh}' for tile, (mesh, _p, _y) in GROUND.items()}
+PRESET_NOTES = {name: (f'Ground mesh: {mesh}' if name in GROUND_PRESETS else f'Mesh: {mesh}')
+                for name, (_p, _y, mesh) in ALL_PRESETS.items()}
+
+
+def _norm(path):
+    return path.replace('\\', '/').lower()
+
+
+# Lookups for Auto position: rom-relative mesh path -> preset names, and bare file name -> names
+# (for meshes copied out of the rom folder layout).
+MESH_INDEX = {}
+BASENAME_INDEX = {}
+for _name, (_p, _y, _mesh) in ALL_PRESETS.items():
+    MESH_INDEX.setdefault(_norm(_mesh), []).append(_name)
+    BASENAME_INDEX.setdefault(_norm(_mesh).rsplit('/', 1)[-1], []).append(_name)
+
+
+def find_presets(path):
+    """Names of the known placements of the mesh at `path` ([] if none). Matched on the path
+    relative to rom/ ('…/rom/meshes/x.mesh' -> 'meshes/x.mesh'), else on the file name alone."""
+    parts = _norm(path).split('/')
+    for i in range(len(parts)):
+        names = MESH_INDEX.get('/'.join(parts[i:]))
+        if names:
+            return list(names)
+    return list(BASENAME_INDEX.get(parts[-1], []))
+
+
+def preset_tile(name):
+    """'Hangar: arid_island_19_11 #2' -> 'arid_island_19_11'."""
+    return name.partition(': ')[2].split(' #')[0].lower()
 
 
 def default_settings():
@@ -230,10 +261,17 @@ class MeshRenderDialog(QtWidgets.QDialog):
                                    'and apply one to the selected mesh row(s)')
         self.preset_btn.clicked.connect(self._open_presets)
         self.preset_picker = None   # built on first use, then kept so the last search is remembered
+        self.auto_btn = QtWidgets.QPushButton('Auto position')
+        self.auto_btn.setToolTip('Look each mesh file up in the known placements and fill in its position.\n'
+                                 'Works on the selected rows, or every row if none are selected.\n'
+                                 'Meshes placed on several tiles use the tiles the other meshes point to, '
+                                 'or ask.')
+        self.auto_btn.clicked.connect(self._auto_position)
         rem = QtWidgets.QPushButton('Remove')
         rem.clicked.connect(self._remove_rows)
         row.addWidget(add)
         row.addWidget(self.preset_btn)
+        row.addWidget(self.auto_btn)
         row.addStretch(1)
         row.addWidget(rem)
         gl.addLayout(row)
@@ -419,13 +457,100 @@ class MeshRenderDialog(QtWidgets.QDialog):
         if not rows:
             QtWidgets.QMessageBox.information(self, 'Preset', 'Select the mesh row(s) to apply the preset to first.')
             return
-        (x, y, z), yaw = ALL_PRESETS[name]
-        # ground meshes make the shore / height lines; buildings shouldn't
-        contours = QtCore.Qt.Checked if name in GROUND_PRESETS else QtCore.Qt.Unchecked
         for r in rows:
-            for c, v in enumerate((x, y, z, yaw), start=1):
-                self.table.item(r, c).setText(f'{v:g}')
-            self.table.item(r, 5).setCheckState(contours)
+            self._set_row_preset(r, name)
+
+    def _set_row_preset(self, r, name):
+        (x, y, z), yaw, _mesh = ALL_PRESETS[name]
+        for c, v in enumerate((x, y, z, yaw), start=1):
+            self.table.item(r, c).setText(f'{v:g}')
+        # ground meshes make the shore / height lines; buildings shouldn't
+        self.table.item(r, 5).setCheckState(QtCore.Qt.Checked if name in GROUND_PRESETS else QtCore.Qt.Unchecked)
+        it = self.table.item(r, 0)
+        it.setToolTip(f'{it.data(QtCore.Qt.UserRole)}\nPlacement: {name}')
+
+    def _row_path(self, r):
+        return self.table.item(r, 0).data(QtCore.Qt.UserRole)
+
+    def _row_label(self, r):
+        return f'row {r + 1}: {os.path.basename(self._row_path(r))}'
+
+    def _ask_preset(self, r, names):
+        """Let the user pick one of several known placements for row r; None to skip it."""
+        labels = []
+        for n in names:
+            (x, y, z), yaw, _mesh = ALL_PRESETS[n]
+            labels.append(f'{n}    ({x:g}, {y:g}, {z:g}  yaw {yaw:g}°)')
+        label, ok = QtWidgets.QInputDialog.getItem(
+            self, 'Auto position',
+            f'{self._row_label(r)} has {len(names)} known placements.\n'
+            'Pick one (Cancel leaves the row unchanged):', labels, 0, False)
+        return names[labels.index(label)] if ok and label in labels else None
+
+    def _auto_position(self):
+        rows = self._selected_rows() or list(range(self.table.rowCount()))
+        if not rows:
+            QtWidgets.QMessageBox.information(self, 'Auto position', 'Add some .mesh files first.')
+            return
+        matches = {r: find_presets(self._row_path(r)) for r in rows}
+        missing = [r for r in rows if not matches[r]]
+
+        # Tiles the scene is known to be on: those of meshes with just one known placement,
+        # and mesh files named after a tile. Used to pick between a mesh's placements on
+        # different tiles (a hangar mesh is on six).
+        hint = {preset_tile(m[0]) for m in matches.values() if len(m) == 1}
+        hint |= {os.path.splitext(os.path.basename(self._row_path(r)))[0].lower()
+                 for r in range(self.table.rowCount())}
+
+        # rows of the same mesh are handled together, so copies get different placements
+        groups = {}
+        for r in rows:
+            if matches[r]:
+                groups.setdefault(tuple(matches[r]), []).append(r)
+
+        placed, skipped, extra = [], [], []
+        for names, grp in groups.items():
+            names = list(names)
+            near = [n for n in names if preset_tile(n) in hint]
+            if near:
+                names = near
+            todo = list(grp)
+            while todo:
+                if len(names) <= len(todo):
+                    # every remaining placement gets used; the rows hold the same mesh,
+                    # so which row gets which doesn't matter
+                    for r, n in zip(todo, names):
+                        self._set_row_preset(r, n)
+                        placed.append(r)
+                        hint.add(preset_tile(n))
+                    extra += todo[len(names):]
+                    break
+                r = todo.pop(0)
+                n = self._ask_preset(r, names)
+                if n is None:
+                    skipped.append(r)
+                    continue
+                names.remove(n)
+                self._set_row_preset(r, n)
+                placed.append(r)
+                hint.add(preset_tile(n))   # later meshes follow the tile picked here
+
+        self.info.setText(f'Auto position: placed {len(placed)} of {len(rows)} mesh(es).'
+                          + ('' if len(placed) == len(rows) else ' Some were left unchanged.'))
+        if missing or skipped or extra:
+            parts = []
+            if missing:
+                parts.append('No known position for (left unchanged):\n'
+                             + '\n'.join('  ' + self._row_label(r) for r in sorted(missing))
+                             + '\nA tile ground mesh that isn\'t in the table normally sits at the '
+                               'origin with no yaw.')
+            if extra:
+                parts.append('More copies than known placements on these tiles (left unchanged):\n'
+                             + '\n'.join('  ' + self._row_label(r) for r in sorted(extra)))
+            if skipped:
+                parts.append('Skipped, no placement chosen (left unchanged):\n'
+                             + '\n'.join('  ' + self._row_label(r) for r in sorted(skipped)))
+            QtWidgets.QMessageBox.warning(self, 'Auto position', '\n\n'.join(parts))
 
     def placements(self):
         out = []

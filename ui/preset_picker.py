@@ -51,7 +51,7 @@ class PresetPicker(QtWidgets.QFrame):
 
         self.total = len(presets)
         groups = {}
-        for name, ((x, y, z), yaw) in presets.items():
+        for name, ((x, y, z), yaw, *_rest) in presets.items():
             group, _, rest = name.partition(': ')
             if not rest:
                 group, rest = 'Other', name
