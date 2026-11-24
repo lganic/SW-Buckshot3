@@ -12,6 +12,9 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from .constants import TILE_HALF
+from .depth_sort import depth_order
+
 VERT_DTYPE = np.dtype([('pos', '<f4', 3), ('col', 'u1', 4), ('nrm', '<f4', 3)])
 
 
@@ -73,7 +76,10 @@ def transform_positions(pos: np.ndarray, p: MeshPlacement) -> np.ndarray:
 
 @dataclass
 class SceneTris:
-    """Up-facing triangles ready to draw, sorted lowest first. Tile coords (+Y up = mesh Z)."""
+    """
+    Up-facing triangles on the tile, in drawing order (each one after everything under it,
+    see depth_sort). Tile coords (+Y up = mesh Z).
+    """
     pts: np.ndarray       # (M, 3, 2) float64 tile x/y
     colors: np.ndarray    # (M, 3) uint8
     contour_meshes: list = field(default_factory=list)  # [(positions(N,3), tris(M,3))]
@@ -100,12 +106,16 @@ def build_scene(placements, cache=None) -> SceneTris:
         cols = mesh.colors[mesh.tris][:, :, :3].astype(np.float64).mean(axis=1)
         all_pts.append(xz[faces_up])
         all_cols.append(np.clip(np.round(cols[faces_up]), 0, 255).astype(np.uint8))
-        all_h.append(tri_pos[faces_up][:, :, 1].mean(axis=1))
+        all_h.append(tri_pos[faces_up][:, :, 1])
 
     if not all_pts:
         return SceneTris(np.zeros((0, 3, 2)), np.zeros((0, 3), np.uint8), contour_meshes)
 
     pts = np.concatenate(all_pts)
     cols = np.concatenate(all_cols)
-    order = np.argsort(np.concatenate(all_h), kind='stable')
+    hts = np.concatenate(all_h)
+    # nothing off the tile is ever seen, and sorting it would only cost time
+    on_tile = (pts.min(axis=1) < TILE_HALF).all(axis=1) & (pts.max(axis=1) > -TILE_HALF).all(axis=1)
+    pts, cols, hts = pts[on_tile], cols[on_tile], hts[on_tile]
+    order, _ = depth_order(pts, hts)
     return SceneTris(pts[order], cols[order], contour_meshes)

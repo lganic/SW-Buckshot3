@@ -227,6 +227,7 @@ class MeshRenderDialog(QtWidgets.QDialog):
         self.mesh_cache = {}
         self.raster = None
         self.scene = None
+        self.scene_key = None      # placements self.scene was built from (sorting it takes a moment)
         self.line_sets = []        # [(channel index, name, polylines)] to import
         self.paint_sets = []       # [(group, level index, polylines)]
         self.result_image = None
@@ -644,7 +645,10 @@ class MeshRenderDialog(QtWidgets.QDialog):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             t0 = time.time()
-            self.scene = build_scene(placements, self.mesh_cache)
+            key = [p.to_dict() for p in placements]
+            if self.scene is None or key != self.scene_key:
+                self.scene = build_scene(placements, self.mesh_cache)
+                self.scene_key = key
             self.line_sets, self.paint_sets = [], []
             notes = []
             for key, label, _ in LINE_GROUPS:
