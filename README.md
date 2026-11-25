@@ -93,7 +93,8 @@ The folder can have any name, so a ZIP extracted as `SW-Buckshot3-main` works th
 
 2. **Edit**: one canvas with two modes (toolbar or `Tab`).
    * **Geometry**: `G` select/move (box select, Shift adds, drag moves), `V` add vertex,
-     `T` triangle (click 3 vertices, or click empty space to create one; Shift-click the third to keep building a strip).
+     `T` triangle (click 3 existing vertices of the layer - the cursor ring shows which one a click will take;
+     Shift-click the third to keep building a strip).
    * **Lines**: `V` draw lines **point to point**. Clicking an existing point connects to it, and clicking an
      existing line splits it to make a junction. Double-click, right-click or Enter ends the line.
      `G` select/move: drag a point onto another point to weld them; double-click a line to insert a point.

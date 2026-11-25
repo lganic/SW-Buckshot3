@@ -16,6 +16,7 @@ from ..core.constants import (RENDER_ORDER, LAYER_COLORS, BASE_COLOR, NUM_CHANNE
                               CHANNEL_COLORS, SLOT_OFFSETS, TILE_HALF)
 
 PICK_PX = 9
+TRI_PICK_PX = 22     # triangle tool: how close (screen px) a click must be to grab a vertex
 SNAP_PX = 9
 DRAG_START_PX = 3
 
@@ -683,7 +684,11 @@ class Canvas(QtWidgets.QWidget):
             return
         if self.drag:
             self._move_drag(e)
-        if self.state.tool != 'select' or self.drag:
+        if self.state.tool == 'triangle' and not self.drag:
+            # the triangle tool only ever picks existing vertices, so the cursor marker shows
+            # exactly which one a click would take
+            self.snapped = self._triangle_target(pos)
+        elif self.state.tool != 'select' or self.drag:
             exclude = self.drag.get('ids', ()) if self.drag else ()
             self.snapped = self.snap(pos, e.modifiers(), self.state.active_key(), exclude)
         else:
@@ -714,6 +719,11 @@ class Canvas(QtWidgets.QWidget):
         if st.tool == 'draw':
             self.chain = None     # the press before this already placed the point
             self.update()
+            return
+        if st.tool == 'triangle':
+            # Qt delivers the second of two quick clicks as a double-click instead of a press;
+            # treat it as a normal click so fast picking doesn't drop vertices
+            self.mousePressEvent(e)
             return
         if st.tool == 'select' and st.mode == 'lines':
             key = st.active_key()
@@ -838,14 +848,23 @@ class Canvas(QtWidgets.QWidget):
             v = self.doc.add_vert(key, (x, y))
         self.set_selection({('v', v)})
 
+    def _triangle_target(self, sp):
+        """Snapped-cursor tuple for the vertex of the active layer the triangle tool would pick."""
+        key = self.state.active_key()
+        v = self.hit_vert(key, sp, radius=TRI_PICK_PX)
+        if v is None:
+            x, y = self.to_world(sp)
+            return x, y, ''      # nothing in reach: plain crosshair, no snap ring
+        x, y = self.doc.graph(key).verts[v]
+        return x, y, 'point'
+
     def _press_triangle(self, e):
         key = self.state.active_key()
         g = self.doc.graph(key)
-        v = self.hit_vert(key, e.position())
+        v = self.hit_vert(key, e.position(), radius=TRI_PICK_PX)
         if v is None:
-            x, y, _ = self.snap(e.position(), e.modifiers(), key)
-            with self.doc.edit('Add vertex'):
-                v = self.doc.add_vert(key, (x, y))
+            self.hint.emit('Triangles can only use existing vertices - add one with the Vertex tool (V)')
+            return
         if v in self.tri_pick:
             self.tri_pick.remove(v)
             return

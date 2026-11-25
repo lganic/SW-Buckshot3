@@ -20,7 +20,7 @@ TOOL_INFO = {
                              'Click or box-drag to select · drag to move · Shift adds · Del deletes'),
     ('geometry', 'vertex'): ('Add vertex', 'V', 'Click to place a vertex (snaps to grid and nearby points; Alt = free)'),
     ('geometry', 'triangle'): ('Triangle', 'T',
-                               'Click 3 vertices (or empty space to make one) · Shift-click the 3rd to keep strip-building · right-click cancels'),
+                               'Click 3 existing vertices · Shift-click the 3rd to keep strip-building · right-click cancels'),
     ('lines', 'select'): ('Select / move', 'G',
                           'Drag points (drop on another point to weld) · double-click a line to insert a point · Del deletes'),
     ('lines', 'draw'): ('Draw lines', 'V',
@@ -164,7 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.snap_combo.addItem('Off' if s == 0 else f'{s:g} m', s)
         self.snap_combo.setCurrentIndex(SNAP_AMOUNTS.index(self.state.snap))
         self.snap_combo.currentIndexChanged.connect(
-            lambda i: (setattr(self.state, 'snap', SNAP_AMOUNTS[i]), self.state.emit('view')))
+            lambda i: (setattr(self.state, 'snap', SNAP_AMOUNTS[i]), self.state.notify('view')))
         self.snap_combo.setToolTip('Grid snap. Existing points always snap within a few pixels; hold Alt for none.')
         tb.addWidget(self.snap_combo)
         tb.addSeparator()
@@ -308,7 +308,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.state.neighbours[slot] = Neighbour(slot, 'mesh', ref, settings=res['settings'])
             self.state.neighbours[slot].compute_edge_points()
-        self.state.emit('refs')
+        self.state.notify('refs')
         self.statusBar().showMessage(f'Placed render in {SLOT_NAMES[slot]}', 5000)
 
     def _add_generated_lines(self, line_sets, settings):
@@ -329,7 +329,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for ch, entries in by_channel.items():
                 names = [n for n, _ in entries]
                 self.doc.channel_names[ch] = names[0] if len(names) == 1 else f'{names[0]} … ({len(names)} levels)'
-            self.state.emit('names')
+            self.state.notify('names')
         n = sum(len(p) for _, _, p in line_sets)
         self.statusBar().showMessage(f'Added {n} generated lines to {len(by_channel)} channel(s) - Ctrl+Z to undo', 6000)
 
@@ -392,7 +392,7 @@ class MainWindow(QtWidgets.QMainWindow):
         nb = Neighbour(slot, 'bin', ImageRef(img, os.path.basename(path), path), path, res, td)
         nb.compute_edge_points()
         self.state.neighbours[slot] = nb
-        self.state.emit('refs')
+        self.state.notify('refs')
         if not self.canvas.view_world_rect().contains(QtCore.QRectF(-1500, -1500, 3000, 3000)):
             self.canvas.fit_all()
 
@@ -411,7 +411,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.state.neighbours[slot] = Neighbour(slot, 'image', ref, path)
             self.state.neighbours[slot].compute_edge_points()
-        self.state.emit('refs')
+        self.state.notify('refs')
 
     # ------------------------------------------------------------------ export
     def export_bin(self):
@@ -449,7 +449,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.doc.reset()
         self.state.background = None
         self.state.neighbours.clear()
-        self.state.emit('refs')
+        self.state.notify('refs')
         self.project_path = None
         self._update_title()
 
@@ -530,8 +530,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         st.neighbours[r['slot']].compute_edge_points()
             except Exception as e:
                 problems.append(f'{r.get("slot")}: {e}')
-        st.emit('refs')
-        st.emit('names')
+        st.notify('refs')
+        st.notify('names')
         self.project_path = path
         st.last_dir = os.path.dirname(path)
         self._update_title()

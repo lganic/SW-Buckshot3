@@ -117,5 +117,5 @@ class EditorState(QtCore.QObject):
         self.changed.emit('active')
         self.set_mode('lines')
 
-    def emit(self, what):
+    def notify(self, what):
         self.changed.emit(what)

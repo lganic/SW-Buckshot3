@@ -20,7 +20,7 @@ COLS = ['Mesh file', 'X', 'Height', 'Z', 'Yaw°', 'Contours']
 
 LINE_GROUPS = [
     # key, label, defaults
-    ('shore', 'Shoreline', dict(imp=True, paint=False, channel=1, single=True, level=0.0)),
+    ('shore', 'Shoreline', dict(imp=True, paint=True, channel=1, single=True, level=0.0)),
     ('height', 'Height contours', dict(imp=True, paint=False, channel=2, single=False,
                                        interval=106 / 9, count=9)),
     ('under', 'Undersea contours', dict(imp=False, paint=True, channel=1, single=True,

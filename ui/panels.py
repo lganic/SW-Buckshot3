@@ -67,7 +67,7 @@ class LayerList(QtWidgets.QTreeWidget):
         vis = it.checkState(0) == QtCore.Qt.Checked
         if self.state.layer_visible[name] != vis:
             self.state.layer_visible[name] = vis
-            self.state.emit('visibility')
+            self.state.notify('visibility')
 
     def _on_current(self, cur, _prev):
         if self._sync or cur is None:
@@ -122,10 +122,10 @@ class ChannelList(QtWidgets.QTreeWidget):
         name = it.text(0).strip() or f'Channel {ch + 1}'
         if name != self.doc.channel_names[ch]:
             self.doc.channel_names[ch] = name
-            self.state.emit('names')
+            self.state.notify('names')
         if self.state.channel_visible[ch] != vis:
             self.state.channel_visible[ch] = vis
-            self.state.emit('visibility')
+            self.state.notify('visibility')
 
     def _on_current(self, cur, _prev):
         if self._sync or cur is None:
@@ -247,7 +247,7 @@ class ReferencePanel(QtWidgets.QWidget):
             ('neighbour_opacity', 'Neighbour tiles', 'Opacity of neighbouring tiles'),
         ]:
             s = _slider(getattr(state, attr), tip)
-            s.valueChanged.connect(lambda v, a=attr: (setattr(state, a, v / 100), state.emit('view')))
+            s.valueChanged.connect(lambda v, a=attr: (setattr(state, a, v / 100), state.notify('view')))
             form.addRow(label, s)
         lay.addLayout(form)
 
@@ -256,7 +256,7 @@ class ReferencePanel(QtWidgets.QWidget):
                             ('show_geometry_in_lines', 'Show geometry in lines mode')]:
             cb = QtWidgets.QCheckBox(label)
             cb.setChecked(getattr(state, attr))
-            cb.toggled.connect(lambda v, a=attr: (setattr(state, a, v), state.emit('view')))
+            cb.toggled.connect(lambda v, a=attr: (setattr(state, a, v), state.notify('view')))
             lay.addWidget(cb)
 
         lay.addWidget(QtWidgets.QLabel('<b>References</b>'))
@@ -303,4 +303,4 @@ class ReferencePanel(QtWidgets.QWidget):
             self.state.background = None
         elif slot in self.state.neighbours:
             del self.state.neighbours[slot]
-        self.state.emit('refs')
+        self.state.notify('refs')
